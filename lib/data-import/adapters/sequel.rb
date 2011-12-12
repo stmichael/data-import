@@ -5,6 +5,8 @@ module DataImport
   module Adapters
     class Sequel
 
+      attr_reader :db
+
       def self.connect(options = {})
         ::Sequel.identifier_output_method = :to_s
         self.new ::Sequel.connect(options)

@@ -11,6 +11,12 @@ module DataImport
         context
       end
 
+      def define(&block)
+        context = new
+        context.instance_eval &block
+        context
+      end
+
       def read_import_config(file)
         File.read(file)
       end
