@@ -38,7 +38,7 @@ module DataImport
     end
 
     def import(name, &block)
-      definition = DataImport::Definition.new(name, source_database, target_database)
+      definition = DataImport::Definition::Simple.new(name, source_database, target_database)
       @definitions << definition
 
       Import.new(definition).instance_eval &block if block_given?

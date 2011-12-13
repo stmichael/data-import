@@ -4,8 +4,8 @@ describe DataImport::Importer do
 
   let(:source) { stub }
   let(:target) { stub }
-  let(:other_definition) { DataImport::Definition.new 'C', source, target }
-  let(:definition) { DataImport::Definition.new 'A', source, target }
+  let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target }
+  let(:definition) { DataImport::Definition::Simple.new 'A', source, target }
   let(:context) { stub }
   before { context.stub(:definition).with('C').and_return(other_definition) }
   subject { DataImport::Importer.new(context, definition) }

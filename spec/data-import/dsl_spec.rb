@@ -58,7 +58,7 @@ describe DataImport::Dsl do
       it "adds a new import config to the import" do
         subject.import 'Import 5'
         subject.definitions.count.should == 1
-        subject.definitions.first.should be_a(DataImport::Definition)
+        subject.definitions.first.should be_a(DataImport::Definition::Simple)
       end
 
       it "sets the source and target database in the definition" do

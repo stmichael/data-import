@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe DataImport::Dsl::Import do
 
-  let(:definition) { DataImport::Definition.new('d', :source, :target) }
+  let(:definition) { DataImport::Definition::Simple.new('d', :source, :target) }
   subject { DataImport::Dsl::Import.new(definition) }
 
   describe "#from" do
