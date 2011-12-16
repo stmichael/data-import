@@ -11,12 +11,15 @@ describe "simple mappings" do
         primary_key :sAnimalID
         String :strAnimalTitleText
         Integer :sAnimalAge
+        Integer :sDangerRating
+        String :strThreat
       end
 
       target_database.db.create_table :animals do
         primary_key :id
         String :name
         Integer :age
+        Integer :danger_rating
       end
 
       import 'Animals' do
@@ -25,7 +28,11 @@ describe "simple mappings" do
 
         mapping 'sAnimalID' => 'id'
         mapping 'strAnimalTitleText' => 'name'
-        mapping 'sAnimalID' => 'age'
+        mapping 'sAnimalAge' => 'age'
+        mapping 'strThreat' do |context, threat|
+          rating = ['none', 'medium', 'big'].index(threat) + 1
+          {:danger_rating => rating}
+        end
       end
     end
   end
@@ -36,23 +43,26 @@ describe "simple mappings" do
   before do
     source.insert(:sAnimalID => 1,
                   :strAnimalTitleText => 'Tiger',
-                  :sAnimalAge => 23)
+                  :sAnimalAge => 23,
+                  :strThreat => 'big')
 
     source.insert(:sAnimalID => 1293,
                   :strAnimalTitleText => 'Horse',
-                  :sAnimalAge => 9)
+                  :sAnimalAge => 11,
+                  :strThreat => 'medium')
 
     source.insert(:sAnimalID => 99,
                   :strAnimalTitleText => 'Cat',
-                  :sAnimalAge => 12)
+                  :sAnimalAge => 5,
+                  :strThreat => 'none')
   end
 
 
   it 'mapps columns to the new schema' do
     DataImport.run_definitions!(dsl.definitions)
-    target.to_a.should == [{:id=>1, :name=>"Tiger", :age=> 1},
-                           {:id=>2, :name=>"Cat", :age=> 99},
-                           {:id=>3, :name=>"Horse", :age=> 1293}]
+    target.to_a.should == [{:id => 1, :name => "Tiger", :age => 23, :danger_rating => 3},
+                           {:id => 99, :name => "Cat", :age => 5, :danger_rating => 1},
+                           {:id => 1293, :name => "Horse", :age => 11, :danger_rating => 2}]
   end
 
 end
