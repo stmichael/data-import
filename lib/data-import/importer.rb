@@ -31,7 +31,8 @@ module DataImport
           keys = old_key
           keys = [keys] unless keys.is_a? Array
           params = [@context] + keys.map{|key| row[key.to_sym]}
-          mapped_row.merge! @definition.instance_exec(*params, &new_key)
+          mapped_values = @definition.instance_exec(*params, &new_key)
+          mapped_row.merge! mapped_values if mapped_values.present?
         else
           mapped_row[new_key] = row[old_key.to_sym]
         end
