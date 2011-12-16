@@ -45,6 +45,10 @@ module DataImport
       when :update
         @definition.target_database.update_row(@definition.target_table_name, mapped_row)
       end
+
+      @definition.after_row_blocks.each do |block|
+        @definition.instance_exec(@context, row, mapped_row, &block)
+      end
     end
     private :import_row
 

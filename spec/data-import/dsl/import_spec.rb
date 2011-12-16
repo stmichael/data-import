@@ -78,4 +78,10 @@ describe DataImport::Dsl::Import do
     end
   end
 
+  it "#after_row adds a block, which is executed after every row" do
+    my_block = lambda {}
+    subject.after_row &my_block
+    definition.after_row_blocks == [my_block]
+  end
+
 end

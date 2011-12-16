@@ -5,7 +5,7 @@ module DataImport
       attr_reader :source_primary_key
       attr_accessor :source_table_name, :source_columns, :source_distinct_columns, :source_order_columns
       attr_accessor :target_table_name
-      attr_accessor :after_blocks
+      attr_accessor :after_blocks, :after_row_blocks
       attr_reader :mode
 
       def initialize(name, source_database, target_database)
@@ -13,6 +13,7 @@ module DataImport
         @mode = :insert
         @id_mappings = {}
         @after_blocks = []
+        @after_row_blocks = []
         @source_columns = []
         @source_order_columns = []
       end
