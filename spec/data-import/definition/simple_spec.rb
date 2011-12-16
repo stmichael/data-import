@@ -4,14 +4,6 @@ describe DataImport::Definition::Simple do
 
   subject { DataImport::Definition::Simple.new('a', :source, :target) }
 
-  describe "#dependencies" do
-    it "can have dependent definitions which must run before" do
-      subject.add_dependency 'b'
-      subject.add_dependency 'c'
-      subject.dependencies.should == ['b', 'c']
-    end
-  end
-
   describe "#mappings" do
     it "returns an empty hash by default" do
       subject.mappings.should be_empty
