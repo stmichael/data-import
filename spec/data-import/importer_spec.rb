@@ -4,8 +4,8 @@ describe DataImport::Importer do
 
   let(:source) { stub }
   let(:target) { stub }
-  let(:other_definition) { DataImport::Definition.new 'C', source, target }
-  let(:definition) { DataImport::Definition.new 'A', source, target }
+  let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target }
+  let(:definition) { DataImport::Definition::Simple.new 'A', source, target }
   let(:context) { stub }
   before { context.stub(:definition).with('C').and_return(other_definition) }
   subject { DataImport::Importer.new(context, definition) }
@@ -63,6 +63,25 @@ describe DataImport::Importer do
     end
   end
 
+  context 'after row blocks' do
+    it "run after the data import" do
+      input_rows = []
+      output_rows = []
+      definition.after_row_blocks << Proc.new do |context, input_row, output_row|
+        input_rows << input_row
+        output_rows << output_row
+      end
+
+      definition.stub(:mappings).and_return { {:id => :new_id} }
+      definition.target_database.should_receive(:insert_row).any_number_of_times
+      subject.send(:import_row, :id => 1)
+      subject.send(:import_row, :id => 2)
+
+      input_rows.should == [{:id => 1}, {:id => 2}]
+      output_rows.should == [{:new_id => 1}, {:new_id => 2}]
+    end
+  end
+
   describe "#import_row" do
     it "executes the insertion" do
       definition.stub(:mappings).and_return { {:id => :id} }
@@ -82,6 +101,13 @@ describe DataImport::Importer do
       definition.stub(:mappings).and_return { {:personenid => lambda{|context, value| {:id => 2}}} }
       definition.stub(:target_table_name).and_return { :table }
       definition.target_database.should_receive(:insert_row).with(:table, :id => 2)
+      subject.send(:import_row, :personenid => 1)
+    end
+
+    it "ignores the return value of the proc when it is nil" do
+      definition.stub(:mappings).and_return { {:personenid => lambda{|context, value| nil }} }
+      definition.stub(:target_table_name).and_return { :table }
+      definition.target_database.should_receive(:insert_row).with(:table, {})
       subject.send(:import_row, :personenid => 1)
     end
 

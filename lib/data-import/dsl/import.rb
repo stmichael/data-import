@@ -33,6 +33,10 @@ module DataImport
         definition.after_blocks << block
       end
 
+      def after_row(&block)
+        definition.after_row_blocks << block
+      end
+
       def dependencies(*dependencies)
         dependencies.each do |dependency|
           definition.add_dependency(dependency)

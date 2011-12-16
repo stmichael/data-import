@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe DataImport::Dsl::Import do
 
-  let(:definition) { DataImport::Definition.new('d', :source, :target) }
+  let(:definition) { DataImport::Definition::Simple.new('d', :source, :target) }
   subject { DataImport::Dsl::Import.new(definition) }
 
   describe "#from" do
@@ -76,6 +76,12 @@ describe DataImport::Dsl::Import do
       subject.after &block
       definition.after_blocks.should include(block)
     end
+  end
+
+  it "#after_row adds a block, which is executed after every row" do
+    my_block = lambda {}
+    subject.after_row &my_block
+    definition.after_row_blocks == [my_block]
   end
 
 end

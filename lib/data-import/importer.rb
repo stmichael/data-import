@@ -31,7 +31,8 @@ module DataImport
           keys = old_key
           keys = [keys] unless keys.is_a? Array
           params = [@context] + keys.map{|key| row[key.to_sym]}
-          mapped_row.merge! @definition.instance_exec(*params, &new_key)
+          mapped_values = @definition.instance_exec(*params, &new_key)
+          mapped_row.merge! mapped_values if mapped_values.present?
         else
           mapped_row[new_key] = row[old_key.to_sym]
         end
@@ -43,6 +44,10 @@ module DataImport
         @definition.add_id_mapping row[@definition.source_primary_key] => new_id
       when :update
         @definition.target_database.update_row(@definition.target_table_name, mapped_row)
+      end
+
+      @definition.after_row_blocks.each do |block|
+        @definition.instance_exec(@context, row, mapped_row, &block)
       end
     end
     private :import_row
