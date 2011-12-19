@@ -1,8 +1,9 @@
 module DataImport
   class Runner
 
-    def initialize(definitions)
-      @definitions = Hash[definitions.map do |definition|
+    def initialize(plan)
+      @plan = plan
+      @definitions = Hash[@plan.definitions.map do |definition|
                             [definition.name, definition]
                           end]
 
@@ -32,6 +33,10 @@ module DataImport
     def definition(name)
       raise "no definition found for '#{name}'" unless @definitions[name].present?
       @definitions[name]
+    end
+
+    def before_filter
+      @plan.before_filter
     end
 
     def definitions_for_execution(run_only = nil)

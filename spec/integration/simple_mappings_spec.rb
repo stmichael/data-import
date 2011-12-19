@@ -2,7 +2,7 @@ require 'data-import'
 
 describe "simple mappings" do
 
-  let(:dsl) do
+  let(:plan) do
     DataImport::Dsl.define do
       source :sequel, 'sqlite:/'
       target :sequel, 'sqlite:/'
@@ -37,8 +37,8 @@ describe "simple mappings" do
     end
   end
 
-  let(:source) { dsl.source_database.db[:tblAnimal] }
-  let(:target) { dsl.target_database.db[:animals] }
+  let(:source) { plan.definitions.first.source_database.db[:tblAnimal] }
+  let(:target) { plan.definitions.first.target_database.db[:animals] }
 
   before do
     source.insert(:sAnimalID => 1,
@@ -59,7 +59,7 @@ describe "simple mappings" do
 
 
   it 'mapps columns to the new schema' do
-    DataImport.run_definitions!(dsl.definitions)
+    DataImport.run_plan!(plan)
     target.to_a.should == [{:id => 1, :name => "Tiger", :age => 23, :danger_rating => 3},
                            {:id => 99, :name => "Cat", :age => 5, :danger_rating => 1},
                            {:id => 1293, :name => "Horse", :age => 11, :danger_rating => 2}]

@@ -6,29 +6,29 @@ describe DataImport do
 
   describe ".run_definitions!" do
     let(:runner) { stub }
+    let(:plan) { DataImport::ExecutionPlan.new(definitions) }
     let(:definitions) { [stub, stub] }
 
     it "can execute a configuration file" do
-      configuration = stub(:definitions => definitions)
-      DataImport::Dsl.should_receive(:evaluate_import_config).with('my_file').and_return(configuration)
-      DataImport::Runner.should_receive(:new).with(definitions).and_return(runner)
+      DataImport::Dsl.should_receive(:evaluate_import_config).with('my_file').and_return(plan)
+      DataImport::Runner.should_receive(:new).with(plan).and_return(runner)
       runner.should_receive(:run).with(:only => ['C'])
 
       subject.run_config! 'my_file', :only => ['C']
     end
 
-    it "uses the DataImport::Runner to execute the definitions" do
-      DataImport::Runner.should_receive(:new).with(definitions).and_return(runner)
+    it "uses the DataImport::Runner to execute the plan" do
+      DataImport::Runner.should_receive(:new).with(plan).and_return(runner)
       runner.should_receive(:run)
 
-      subject.run_definitions!(definitions)
+      subject.run_plan!(plan)
     end
 
     it "passes options to the runner" do
-      DataImport::Runner.should_receive(:new).with(definitions).and_return(runner)
+      DataImport::Runner.should_receive(:new).with(plan).and_return(runner)
       runner.should_receive(:run).with(:only => ['A', 'B'])
 
-      subject.run_definitions!(definitions, :only => ['A', 'B'])
+      subject.run_plan!(plan, :only => ['A', 'B'])
     end
   end
 end

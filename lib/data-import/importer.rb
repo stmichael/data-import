@@ -14,6 +14,7 @@ module DataImport
         options[:distinct] = @definition.source_distinct_columns
         options[:order] = @definition.source_order_columns
         @definition.source_database.each_row(@definition.source_table_name, options) do |row|
+          @context.before_filter.call(row) if @context.before_filter
           encode_row row
           import_row row
           yield if block_given?

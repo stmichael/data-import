@@ -2,7 +2,7 @@ require 'data-import'
 
 describe "update existing records" do
 
-  let(:dsl) do
+  let(:plan) do
     DataImport::Dsl.define do
       source :sequel, 'sqlite:/'
       target :sequel, 'sqlite:/'
@@ -29,8 +29,8 @@ describe "update existing records" do
     end
   end
 
-  let(:source) { dsl.source_database.db[:tblArticleAbout] }
-  let(:target) { dsl.target_database.db[:articles] }
+  let(:source) { plan.definitions.first.source_database.db[:tblArticleAbout] }
+  let(:target) { plan.definitions.first.target_database.db[:articles] }
 
   before do
     source.insert(:sID => 1,
@@ -49,7 +49,7 @@ describe "update existing records" do
 
 
   it 'mapps columns to the new schema' do
-    DataImport.run_definitions!(dsl.definitions)
+    DataImport.run_plan!(plan)
     target.to_a.should == [{:id => 12, :title => "The Book!", :author => 'Adam K.'},
                            {:id => 145, :title => "The other Book.", :author => 'James G.'}]
   end

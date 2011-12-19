@@ -6,27 +6,30 @@ module DataImport
     class << self
 
       def evaluate_import_config(file)
-        context = new
+        plan = DataImport::ExecutionPlan.new
+        context = new(plan)
         context.instance_eval read_import_config(file), file
-        context
+        plan
       end
 
       def define(&block)
-        context = new
+        plan = DataImport::ExecutionPlan.new
+        context = new(plan)
         context.instance_eval &block
-        context
+        plan
       end
 
       def read_import_config(file)
         File.read(file)
       end
+      private :read_import_config
 
     end
 
-    attr_reader :source_database, :target_database, :definitions
+    attr_reader :source_database, :target_database
 
-    def initialize
-      @definitions = []
+    def initialize(plan)
+      @plan = plan
     end
 
     def source(*args)
@@ -39,9 +42,13 @@ module DataImport
 
     def import(name, &block)
       definition = DataImport::Definition::Simple.new(name, source_database, target_database)
-      @definitions << definition
+      @plan.add_definition(definition)
 
       Import.new(definition).instance_eval &block if block_given?
+    end
+
+    def before_filter(&block)
+      @plan.before_filter = block
     end
   end
 end

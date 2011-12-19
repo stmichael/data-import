@@ -6,9 +6,14 @@ describe DataImport::Runner do
     let(:people) { DataImport::Definition.new('People', 'tblPerson', 'people') }
     let(:animals) { DataImport::Definition.new('Animals', 'tblAnimal', 'animals') }
     let(:articles) { DataImport::Definition.new('Articles', 'tblNewsMessage', 'articles') }
-    let(:definitions) { [articles, people, animals] }
+    let(:plan) { DataImport::ExecutionPlan.new }
+    before do
+      plan.add_definition(articles)
+      plan.add_definition(people)
+      plan.add_definition(animals)
+    end
 
-    subject { DataImport::Runner.new(definitions) }
+    subject { DataImport::Runner.new(plan) }
 
     it 'runs a set of definitions' do
       articles.should_receive(:run)
@@ -42,7 +47,8 @@ describe DataImport::Runner do
       ab_a1_1.add_dependency('A-B-1')
       ab_a1_1.add_dependency('A1')
 
-      importer = DataImport::Runner.new([ab_a1_1, ab_1, b, a, a_1])
+      plan = DataImport::ExecutionPlan.new([ab_a1_1, ab_1, b, a, a_1])
+      importer = DataImport::Runner.new(plan)
 
       call_order = []
 
@@ -64,7 +70,8 @@ describe DataImport::Runner do
       abc = DataImport::Definition.new 'ABC', :source, :target
       abc.add_dependency('AB')
 
-      importer = DataImport::Runner.new([abc, a, ab])
+      plan = DataImport::ExecutionPlan.new([abc, a, ab])
+      importer = DataImport::Runner.new(plan)
 
       call_order = []
 
@@ -83,7 +90,8 @@ describe DataImport::Runner do
       a.add_dependency('B')
       b.add_dependency('A')
 
-      importer = DataImport::Runner.new([a, b])
+      plan = DataImport::ExecutionPlan.new([a, b])
+      importer = DataImport::Runner.new(plan)
 
       lambda do
         importer.run
@@ -94,7 +102,8 @@ describe DataImport::Runner do
       a = DataImport::Definition.new 'A', :source, :target
       a.add_dependency('NOT_PRESENT')
 
-      importer = DataImport::Runner.new([a])
+      plan = DataImport::ExecutionPlan.new([a])
+      importer = DataImport::Runner.new(plan)
 
       lambda do
         importer.run
@@ -109,7 +118,8 @@ describe DataImport::Runner do
       aba.add_dependency('AB')
       aba.add_dependency('A')
 
-      importer = DataImport::Runner.new([a, aba, ab])
+      plan = DataImport::ExecutionPlan.new([a, aba, ab])
+      importer = DataImport::Runner.new(plan)
 
       call_order = []
 
