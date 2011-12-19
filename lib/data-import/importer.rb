@@ -15,7 +15,6 @@ module DataImport
         options[:order] = @definition.source_order_columns
         @definition.source_database.each_row(@definition.source_table_name, options) do |row|
           @context.before_filter.call(row) if @context.before_filter
-          encode_row row
           import_row row
           yield if block_given?
         end
@@ -52,16 +51,5 @@ module DataImport
       end
     end
     private :import_row
-
-    def encode_row(row)
-      row.each do |key, value|
-        if value.is_a?(String)
-          value.force_encoding('CP850')
-          row[key] = Iconv.conv('UTF-8', 'CP850', value)
-        end
-      end
-    end
-    private :encode_row
-
   end
 end
