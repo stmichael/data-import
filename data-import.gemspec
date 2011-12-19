@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.email       = ['michael.staempfli@garaio.com', 'yves.senn@garaio.com']
   s.homepage    = ""
   s.summary     = %q{migrate your data to a better palce}
-  s.description = %q{dsl to migrate data from a legacy database to a new home}
+  s.description = %q{sequel based dsl to migrate data from a legacy database to a new home}
 
   s.rubyforge_project = "data-import"
 
