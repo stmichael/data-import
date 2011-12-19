@@ -4,7 +4,9 @@ data-import is a data-migration framework. The goal of the project is to provide
 
 ## Installation
 
+```ruby
 gem 'data-import'
+```
 
 you can put your migration configuration in any file you like. We suggest something like `mapping.rb`
 
