@@ -1,7 +1,9 @@
 module DataImport
   class Definition
     class Simple < Definition
-      attr_reader :id_mappings
+
+      include Lookup
+
       attr_reader :source_primary_key
       attr_accessor :source_table_name, :source_columns, :source_distinct_columns, :source_order_columns
       attr_accessor :target_table_name
@@ -11,7 +13,6 @@ module DataImport
       def initialize(name, source_database, target_database)
         super
         @mode = :insert
-        @id_mappings = {}
         @after_blocks = []
         @after_row_blocks = []
         @source_columns = []
@@ -24,14 +25,6 @@ module DataImport
 
       def source_primary_key=(value)
         @source_primary_key = value.to_sym unless value.nil?
-      end
-
-      def add_id_mapping(mapping)
-        @id_mappings.merge! mapping
-      end
-
-      def new_id_of(value)
-        @id_mappings[value]
       end
 
       def definition(name = nil)

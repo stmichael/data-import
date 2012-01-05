@@ -133,6 +133,26 @@ DataImport.run_config! 'mappings.rb', :only => ['Roles'] # => imports Roles only
 DataImport.run_config! 'mappings.rb', :only => ['Permissions'] # => imports Roles, SubscriptionPlans, Users and then Permissions
 ```
 
+### Lookup-Tables
+
+If you have tables referenced on other fields than their primary-key you need to perform lookups while migrating the data. data-import provides a feature called lookup-tables to basically create an index on any given field to the migrated primary-key.
+
+The following example shows a table `People` which is linked to the table `Organizations`. Sadly the legacy-schema used the field :code from the `Organizations`-table as reference.
+
+```ruby
+import 'Organizations' do
+  # define a lookup-table on the :code attribute
+  lookup_table_on :code
+end
+
+import 'People' do
+  mapping 'OrganizationCode' do |context, value|
+    # you can then use the previously defined lookup-table on :code to get the primary-key
+    {:org_id => context.definition('Organizations').identified_by(:code, value)}
+  end
+end
+```
+
 ## Examples
 
 you can learn a lot from the [integration specs](https://github.com/garaio/data-import/tree/master/spec/integration).

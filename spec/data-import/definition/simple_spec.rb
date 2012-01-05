@@ -10,20 +10,6 @@ describe DataImport::Definition::Simple do
     end
   end
 
-  describe "#add_id_mapping" do
-    it "adds a primary key mapping to the definition" do
-      subject.add_id_mapping 18 => 24
-      subject.id_mappings[18].should == 24
-    end
-  end
-
-  describe "#new_id_of" do
-    it "looks for the new id in the id mappings" do
-      subject.add_id_mapping 39 => 834
-      subject.new_id_of(39).should == 834
-    end
-  end
-
   describe "#definition" do
     it "returns the definition of the importer if nothing is passed" do
       subject.definition.should == subject
