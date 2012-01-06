@@ -151,7 +151,7 @@ end
 import 'People' do
   mapping 'OrganizationCode' do |context, value|
     # you can then use the previously defined lookup-table on :code to get the primary-key
-    {:org_id => context.definition('Organizations').identified_by(:code, value)}
+    {:org_id => context.definition('Organizations').identify_by(:code, value)}
   end
 end
 ```
