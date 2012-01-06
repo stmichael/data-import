@@ -43,6 +43,10 @@ module DataImport
         end
       end
 
+      def lookup_for(*attributes)
+        definition.lookup_for(*attributes)
+      end
+
     end
   end
 end

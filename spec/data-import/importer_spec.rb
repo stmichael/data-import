@@ -133,7 +133,7 @@ describe DataImport::Importer do
     it "adds the generated id to the id mapping of the definition" do
       definition.target_database.stub(:insert_row).and_return { 15 }
       definition.stub(:source_primary_key).and_return { :id }
-      definition.should_receive(:add_id_mapping).with(1 => 15)
+      definition.should_receive(:add_mappings).with(15, {:id => 1})
       subject.send(:import_row, :id => 1)
     end
 
