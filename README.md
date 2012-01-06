@@ -142,7 +142,7 @@ The following example shows a table `People` which is linked to the table `Organ
 ```ruby
 import 'Organizations' do
   # define a lookup-table on the :code attribute
-  lookup_table_on :code
+  lookup_for :code
 end
 
 import 'People' do
