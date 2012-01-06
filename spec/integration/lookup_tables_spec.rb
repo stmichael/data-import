@@ -14,6 +14,7 @@ describe "lookup tables" do
 
       source_database.db.create_table :tblPosts do
         primary_key :sPostId
+        Integer :sArticleId
         String :strArticleRef
       end
 
@@ -25,13 +26,15 @@ describe "lookup tables" do
       target_database.db.create_table :posts do
         primary_key :id
         Integer :article_id
+        Integer :similar_article_id
       end
 
       import 'Articles' do
         from 'tblArticles', :primary_key => 'sArticleId'
         to 'articles'
 
-        lookup_for 'strRef'
+        lookup_for :sArticleId
+        lookup_for :reference, :column => 'strRef'
 
         mapping 'strRef' => 'slug'
       end
@@ -42,8 +45,11 @@ describe "lookup tables" do
         dependencies 'Articles'
 
         mapping 'sPostId' => :id
+        mapping 'sArticleId' do |context, value|
+          { :article_id => context.definition('Articles').identify_by(:sArticleId, value) }
+        end
         mapping 'strArticleRef' do |context, value|
-          { :article_id => context.definition('Articles').identify_by(:strRef, value) }
+          { :similar_article_id => context.definition('Articles').identify_by(:reference, value) }
         end
       end
     end
@@ -55,25 +61,28 @@ describe "lookup tables" do
   let(:target_posts) { plan.definitions.first.target_database.db[:posts] }
 
   before do
-    source_articles.insert(:sArticleId => 1,
+    source_articles.insert(:sArticleId => 10001,
                            :strRef => 'data-import-is-awesome')
-    source_articles.insert(:sArticleId => 2,
+    source_articles.insert(:sArticleId => 20002,
                            :strRef => 'ruby-is-awesome')
     source_posts.insert(:sPostId => 7,
-                        :strArticleRef => 'ruby-is-awesome')
-    source_posts.insert(:sPostId => 8,
+                        :sArticleId => 20002,
                         :strArticleRef => 'data-import-is-awesome')
-    source_posts.insert(:sPostId => 9,
+    source_posts.insert(:sPostId => 8,
+                        :sArticleId => 10001,
                         :strArticleRef => 'ruby-is-awesome')
+    source_posts.insert(:sPostId => 9,
+                        :sArticleId => 20002,
+                        :strArticleRef => 'data-import-is-awesome')
 
   end
 
 
   it 'mapps columns to the new schema' do
     DataImport.run_plan!(plan)
-    target_posts.to_a.should == [{:id => 7, :article_id => 2},
-                                 {:id => 8, :article_id => 1},
-                                 {:id => 9, :article_id => 2}]
+    target_posts.to_a.should == [{:id => 7, :article_id => 2, :similar_article_id => 1},
+                                 {:id => 8, :article_id => 1, :similar_article_id => 2},
+                                 {:id => 9, :article_id => 2, :similar_article_id => 1}]
   end
 
 end
