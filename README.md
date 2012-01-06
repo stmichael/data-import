@@ -141,8 +141,11 @@ The following example shows a table `People` which is linked to the table `Organ
 
 ```ruby
 import 'Organizations' do
-  # define a lookup-table on the :code attribute
-  lookup_for :code
+  # define a lookup-table on the :sOrgId attribute named :sOrgId
+  lookup_for :sOrgId
+
+  # define a lookup-table on the :strCode attribute named :code
+  lookup_for :code, :column => 'strCode'
 end
 
 import 'People' do
