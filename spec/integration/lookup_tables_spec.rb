@@ -65,6 +65,7 @@ describe "lookup tables" do
                            :strRef => 'data-import-is-awesome')
     source_articles.insert(:sArticleId => 20002,
                            :strRef => 'ruby-is-awesome')
+    source_articles.insert(:sArticleId => 66666)
     source_posts.insert(:sPostId => 7,
                         :sArticleId => 20002,
                         :strArticleRef => 'data-import-is-awesome')
@@ -74,6 +75,7 @@ describe "lookup tables" do
     source_posts.insert(:sPostId => 9,
                         :sArticleId => 20002,
                         :strArticleRef => 'data-import-is-awesome')
+    source_posts.insert(:sPostId => 10)
 
   end
 
@@ -82,7 +84,8 @@ describe "lookup tables" do
     DataImport.run_plan!(plan)
     target_posts.to_a.should == [{:id => 7, :article_id => 2, :similar_article_id => 1},
                                  {:id => 8, :article_id => 1, :similar_article_id => 2},
-                                 {:id => 9, :article_id => 2, :similar_article_id => 1}]
+                                 {:id => 9, :article_id => 2, :similar_article_id => 1},
+                                 {:id => 10, :article_id => nil, :similar_article_id => nil}]
   end
 
 end

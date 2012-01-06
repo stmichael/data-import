@@ -95,5 +95,11 @@ describe DataImport::Definition::Lookup do
       end.should raise_error(ArgumentError, "no lookup-table defined named 'undefined_lookup_table'")
     end
 
+    it 'do not add nil value mappings' do
+      do_not_map_this_id = 6
+      subject.add_mappings(do_not_map_this_id, :code => nil)
+
+      subject.identify_by(:code, nil).should == nil
+    end
   end
 end

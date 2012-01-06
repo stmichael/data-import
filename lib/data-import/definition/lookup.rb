@@ -14,14 +14,14 @@ module DataImport
           raise ArgumentError, "lookup-table for column '#{config.attribute}' was already defined"
         else
           @lookup_table_configurations[config.attribute] = config
+          @lookup_tables[config.name] = {}
         end
       end
 
       def add_mappings(id, row)
         row.each do |attribute, value|
           if has_lookup_table_on?(attribute)
-            name = config_for(attribute).name
-            lookup_table_named(name)[value] = id
+            add_mapping(attribute, value, id)
           end
         end
       end
@@ -42,13 +42,22 @@ module DataImport
         @lookup_tables.has_key?(name.to_sym)
       end
 
+      def add_mapping(attribute, value, id)
+        return if value.blank?
+        name = config_for(attribute).name
+        lookup_table_named(name)[value] = id
+      end
+      private :add_mapping
+
       def config_for(attribute)
         @lookup_table_configurations[attribute]
       end
+      private :config_for
 
       def lookup_table_named(name)
-        @lookup_tables[name] ||= {}
+        @lookup_tables[name]
       end
+      private :lookup_table_named
 
       class LookupTableConfig
         attr_accessor :name, :attribute
