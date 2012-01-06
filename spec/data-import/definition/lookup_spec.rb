@@ -14,43 +14,51 @@ describe DataImport::Definition::Lookup do
     it 'knows what attributes have a lookup-table' do
       subject.lookup_for :code
 
-      subject.lookup_table_on?(:code).should be_true
+      subject.has_lookup_table_on?(:code).should be_true
     end
 
     it 'knows what attributes do not have a lookup-table' do
       subject.lookup_for :code
 
-      subject.lookup_table_on?(:oldID).should be_false
-      subject.lookup_table_on?(:strRef).should be_false
-      subject.lookup_table_on?(:abcd).should be_false
-    end
-
-    it 'allows to define multiple lookup-tables in one call' do
-      subject.lookup_for :code, :oldID
-
-      subject.lookup_table_on?(:code).should be_true
-      subject.lookup_table_on?(:oldID).should be_true
+      subject.has_lookup_table_on?(:oldID).should be_false
+      subject.has_lookup_table_on?(:strRef).should be_false
+      subject.has_lookup_table_on?(:abcd).should be_false
     end
 
     it 'allows to define lookup-tables with multiple calls' do
       subject.lookup_for :code
       subject.lookup_for :strRef
 
-      subject.lookup_table_on?(:code).should be_true
-      subject.lookup_table_on?(:strRef).should be_true
+      subject.has_lookup_table_on?(:code).should be_true
+      subject.has_lookup_table_on?(:strRef).should be_true
     end
 
     it 'works with strings' do
       subject.lookup_for 'a_string'
 
-      subject.lookup_table_on?(:a_string).should be_true
+      subject.has_lookup_table_on?(:a_string).should be_true
     end
 
     it 'works with symbols' do
       subject.lookup_for :a_symbol
 
-      subject.lookup_table_on?('a_symbol').should be_true
+      subject.has_lookup_table_on?('a_symbol').should be_true
     end
+
+    it 'should not allow to define two lookup-tables with the same name' do
+      subject.lookup_for :code
+      lambda do
+        subject.lookup_for :code
+      end.should raise_error(ArgumentError, "lookup-table for column 'code' was already defined")
+    end
+
+    it 'should not allow to define two lookup-tables for the same column' do
+      subject.lookup_for :code
+      lambda do
+        subject.lookup_for :same_code, :column => :code
+      end.should raise_error(ArgumentError, "lookup-table for column 'code' was already defined")
+    end
+
   end
 
   describe 'mappings and lookups' do
@@ -64,8 +72,28 @@ describe DataImport::Definition::Lookup do
 
     it 'stores added mappings' do
       id = 17
-      subject.add_mappings(id, :code => 'value-to-lookup')
-      subject.identify_by(:code, 'value-to-lookup').should == id
+      lookup_value = 'value-to-lookup'
+
+      subject.add_mappings(id, :code => lookup_value)
+
+      subject.identify_by(:code, lookup_value).should == id
     end
+
+    it 'allows to specify a column name different form the lookup name' do
+      id = 9
+      ref = 'i-am-a-reference'
+      subject.lookup_for :reference, :column => 'strRef'
+
+      subject.add_mappings(id, :strRef => ref)
+
+      subject.identify_by(:reference, ref).should == id
+    end
+
+    it 'raises an exception when trying accessing an undefined lookup-table' do
+      lambda do
+        subject.identify_by(:undefined_lookup_table, 'this-wont-work')
+      end.should raise_error(ArgumentError, "no lookup-table defined named 'undefined_lookup_table'")
+    end
+
   end
 end
