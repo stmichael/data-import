@@ -41,7 +41,7 @@ module DataImport
       case @definition.mode
       when :insert
         new_id = @definition.target_database.insert_row @definition.target_table_name, mapped_row
-        @definition.add_id_mapping row[@definition.source_primary_key] => new_id
+        @definition.add_mappings(new_id, row)
       when :update
         @definition.target_database.update_row(@definition.target_table_name, mapped_row)
       end

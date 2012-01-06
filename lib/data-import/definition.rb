@@ -1,3 +1,4 @@
+require 'data-import/definition/lookup'
 require 'data-import/definition/simple'
 
 module DataImport
