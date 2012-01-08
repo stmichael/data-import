@@ -1,6 +1,6 @@
 
 require 'yaml'
-require 'progress'
+require 'progressbar'
 require 'active_support/all'
 
 require "data-import/version"

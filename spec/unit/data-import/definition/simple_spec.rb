@@ -45,10 +45,12 @@ describe DataImport::Definition::Simple do
       source_db.should_receive(:count).with('tblHouses',
                                             :columns => source_columns,
                                             :distinct => source_distinct_columns).and_return(125)
-      Progress.should_receive(:start).with('Importing Houses', 125).and_yield
+      progressbar = stub
+      ProgressBar.should_receive(:new).with('Importing Houses', 125).and_return(progressbar)
       importer = mock
       DataImport::Importer.should_receive(:new).with('CONTEXT', subject).and_return(importer)
       importer.should_receive(:run)
+      progressbar.should_receive(:inc)
 
       subject.run('CONTEXT')
     end

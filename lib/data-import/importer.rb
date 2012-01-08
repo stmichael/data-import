@@ -16,7 +16,6 @@ module DataImport
         @definition.source_database.each_row(@definition.source_table_name, options) do |row|
           @context.before_filter.call(row) if @context.before_filter
           import_row row
-          yield if block_given?
         end
       end
       @definition.after_blocks.each do |block|

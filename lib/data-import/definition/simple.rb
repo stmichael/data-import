@@ -41,11 +41,9 @@ module DataImport
 
       def run(context)
         options = {:columns => source_columns, :distinct => source_distinct_columns}
-        Progress.start("Importing #{name}", source_database.count(source_table_name, options)) do
-          Importer.new(context, self).run do
-            Progress.step
-          end
-        end
+        bar = ProgressBar.new("Importing #{name}", source_database.count(source_table_name, options))
+        Importer.new(context, self).run
+        bar.inc
       end
     end
   end

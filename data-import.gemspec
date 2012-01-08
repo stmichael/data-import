@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "sqlite3"
 
   s.add_runtime_dependency "sequel"
-  s.add_runtime_dependency "progress"
+  s.add_runtime_dependency "progressbar"
   s.add_runtime_dependency "activesupport"
   s.add_runtime_dependency "i18n"
 end
