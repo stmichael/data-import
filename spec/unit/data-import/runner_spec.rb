@@ -2,6 +2,14 @@ require 'unit/spec_helper'
 
 describe DataImport::Runner do
 
+  let(:mock_progress_class) do
+    Class.new do
+      def initialize(name, total_steps); end
+
+      def finish; end
+    end
+  end
+
   context 'with simple definitions' do
     let(:people) { DataImport::Definition.new('People', 'tblPerson', 'people') }
     let(:animals) { DataImport::Definition.new('Animals', 'tblAnimal', 'animals') }
@@ -13,7 +21,7 @@ describe DataImport::Runner do
       plan.add_definition(animals)
     end
 
-    subject { DataImport::Runner.new(plan) }
+    subject { DataImport::Runner.new(plan, mock_progress_class) }
 
     it 'runs a set of definitions' do
       articles.should_receive(:run)
@@ -48,7 +56,7 @@ describe DataImport::Runner do
       ab_a1_1.add_dependency('A1')
 
       plan = DataImport::ExecutionPlan.new([ab_a1_1, ab_1, b, a, a_1])
-      importer = DataImport::Runner.new(plan)
+      importer = DataImport::Runner.new(plan, mock_progress_class)
 
       call_order = []
 
@@ -71,7 +79,7 @@ describe DataImport::Runner do
       abc.add_dependency('AB')
 
       plan = DataImport::ExecutionPlan.new([abc, a, ab])
-      importer = DataImport::Runner.new(plan)
+      importer = DataImport::Runner.new(plan, mock_progress_class)
 
       call_order = []
 
@@ -91,7 +99,7 @@ describe DataImport::Runner do
       b.add_dependency('A')
 
       plan = DataImport::ExecutionPlan.new([a, b])
-      importer = DataImport::Runner.new(plan)
+      importer = DataImport::Runner.new(plan, mock_progress_class)
 
       lambda do
         importer.run
@@ -103,7 +111,7 @@ describe DataImport::Runner do
       a.add_dependency('NOT_PRESENT')
 
       plan = DataImport::ExecutionPlan.new([a])
-      importer = DataImport::Runner.new(plan)
+      importer = DataImport::Runner.new(plan, mock_progress_class)
 
       lambda do
         importer.run
@@ -119,7 +127,7 @@ describe DataImport::Runner do
       aba.add_dependency('A')
 
       plan = DataImport::ExecutionPlan.new([a, aba, ab])
-      importer = DataImport::Runner.new(plan)
+      importer = DataImport::Runner.new(plan, mock_progress_class)
 
       call_order = []
 

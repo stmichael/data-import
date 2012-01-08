@@ -2,7 +2,23 @@ require 'unit/spec_helper'
 
 describe DataImport::Definition::Simple do
 
-  subject { DataImport::Definition::Simple.new('a', :source, :target) }
+  let(:source) { stub }
+  let(:target) { stub }
+  subject { DataImport::Definition::Simple.new('a', source, target) }
+
+  it 'takes one step per row to execute' do
+    record_count = 376
+    subject.source_table_name = 'tblHouses'
+    source_columns = [:name, :location, :location2]
+    subject.source_columns = source_columns
+    source_distinct_columns = [:name, :location]
+    subject.source_distinct_columns = source_distinct_columns
+
+    source.should_receive(:count).with('tblHouses',
+                                       :columns => source_columns,
+                                       :distinct => source_distinct_columns).and_return(record_count)
+    subject.total_steps_required.should == record_count
+  end
 
   describe "#mappings" do
     it "returns an empty hash by default" do
@@ -27,32 +43,14 @@ describe DataImport::Definition::Simple do
   end
 
   describe '#run' do
-
-    let(:source_db) { mock }
-    let(:target_db) { mock }
-    let(:source_columns) { [:name, :location, :location2] }
-    let(:source_distinct_columns) { [:name, :location] }
-
-    subject do
-      definition = DataImport::Definition::Simple.new('Houses', source_db, target_db)
-      definition.source_table_name = 'tblHouses'
-      definition.source_columns = source_columns
-      definition.source_distinct_columns = source_distinct_columns
-      definition
-    end
-
     it 'executes the definition and displays the progress' do
-      source_db.should_receive(:count).with('tblHouses',
-                                            :columns => source_columns,
-                                            :distinct => source_distinct_columns).and_return(125)
-      progressbar = stub
-      ProgressBar.should_receive(:new).with('Importing Houses', 125).and_return(progressbar)
+      progress_reporter = stub
       importer = mock
       DataImport::Importer.should_receive(:new).with('CONTEXT', subject).and_return(importer)
       importer.should_receive(:run)
-      progressbar.should_receive(:inc)
+      progress_reporter.should_receive(:inc)
 
-      subject.run('CONTEXT')
+      subject.run('CONTEXT', progress_reporter)
     end
   end
 

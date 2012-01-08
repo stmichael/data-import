@@ -1,8 +1,9 @@
 module DataImport
   class Runner
 
-    def initialize(plan)
+    def initialize(plan, progress_reporter = ProgressBar)
       @plan = plan
+      @progress_reporter = progress_reporter
       @definitions = Hash[@plan.definitions.map do |definition|
                             [definition.name, definition]
                           end]
@@ -18,7 +19,9 @@ module DataImport
           candidate = definition(name)
           next if @executed_definitions.include?(name)
           if (candidate.dependencies - @executed_definitions).blank?
-            candidate.run(self)
+            bar = @progress_reporter.new(name, candidate.total_steps_required)
+            candidate.run(self, bar)
+            bar.finish
             @executed_definitions << name
             did_execute = true
           end
