@@ -17,6 +17,9 @@ module TestingMacros
     let(:plan) { plan }
     let(:source_database) { source_database }
     let(:target_database) { target_database }
+    after do
+      target_database.tables.each {|t| target_database[t].delete }
+    end
   end
 
   def database_setup(&block)
