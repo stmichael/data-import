@@ -40,8 +40,7 @@ module DataImport
       end
 
       def run(context, progress_reporter)
-        Importer.new(context, self).run
-        progress_reporter.inc
+        Importer.new(context, self, progress_reporter).run
       end
 
       def total_steps_required

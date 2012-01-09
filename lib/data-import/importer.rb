@@ -1,9 +1,10 @@
 module DataImport
   class Importer
 
-    def initialize(context, definition)
+    def initialize(context, definition, progress_reporter)
       @context = context
       @definition = definition
+      @progress_reporter = progress_reporter
     end
 
     def run
@@ -16,6 +17,7 @@ module DataImport
         @definition.source_database.each_row(@definition.source_table_name, options) do |row|
           @context.before_filter.call(row) if @context.before_filter
           import_row row
+          @progress_reporter.inc
         end
       end
       @definition.after_blocks.each do |block|
