@@ -1,9 +1,10 @@
 
 require 'yaml'
-require 'progress'
+require 'progressbar'
 require 'active_support/all'
 
 require "data-import/version"
+require 'data-import/dependency_resolver'
 require 'data-import/runner'
 require 'data-import/execution_plan'
 require 'data-import/dsl'

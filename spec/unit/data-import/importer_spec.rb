@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'unit/spec_helper'
 
 describe DataImport::Importer do
 
@@ -7,8 +7,9 @@ describe DataImport::Importer do
   let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target }
   let(:definition) { DataImport::Definition::Simple.new 'A', source, target }
   let(:context) { stub(:before_filter => nil) }
+  let(:progress_reporter) { stub }
   before { context.stub(:definition).with('C').and_return(other_definition) }
-  subject { DataImport::Importer.new(context, definition) }
+  subject { DataImport::Importer.new(context, definition, progress_reporter) }
 
   describe "#run" do
     it "runs the import in a transaction" do
@@ -22,6 +23,7 @@ describe DataImport::Importer do
 
       subject.should_receive(:import_row).with(:a => :b)
       subject.should_receive(:import_row).with(:c => :d)
+      progress_reporter.should_receive(:inc).twice
       subject.run
     end
 
@@ -29,6 +31,7 @@ describe DataImport::Importer do
       context.stub(:before_filter => lambda do |row|
                      row['a'] = row['a'].upcase
                    end)
+      progress_reporter.stub(:inc)
       definition.target_database.stub(:transaction).and_yield
       definition.source_database.stub(:each_row).and_yield('a' => 'b').and_yield('a' => 'c')
 

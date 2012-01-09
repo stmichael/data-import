@@ -17,5 +17,9 @@ module DataImport
     def add_dependency(dependency)
       @dependencies << dependency
     end
+
+    def total_steps_required
+      1
+    end
   end
 end

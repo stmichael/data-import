@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'unit/spec_helper'
 
 require 'data-import/adapters/sequel'
 

@@ -1,22 +1,23 @@
-require 'spec_helper'
+require 'unit/spec_helper'
 
 describe DataImport::ExecutionPlan do
 
   let(:people) { DataImport::Definition.new('People', :tblPerson, :people) }
   let(:houses) { DataImport::Definition.new('House', :tblHouse, :houses) }
+  let(:definitions) { [people, houses] }
 
-  it 'kann mit einem Set von Definitions erstellt werden' do
-    plan = DataImport::ExecutionPlan.new([people, houses])
-    plan.definitions.should == [people, houses]
+  it 'can be created with a set of definitions' do
+    plan = DataImport::ExecutionPlan.new(definitions)
+    plan.definitions.should == definitions
   end
 
-  it 'beschreibt den Ablauf anhand von definitions' do
+  it 'definitions can be added' do
     subject.add_definition(people)
     subject.add_definition(houses)
     subject.definitions.should == [people, houses]
   end
 
-  it 'kann einen before_filter enthalten' do
+  it 'can contain a before_filter' do
     my_filter = lambda {}
     subject.before_filter = my_filter
     subject.before_filter.should == my_filter
