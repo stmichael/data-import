@@ -12,30 +12,32 @@ describe DataImport::Runner do
 
   context 'with simple definitions' do
     let(:people) { DataImport::Definition.new('People', 'tblPerson', 'people') }
-    let(:animals) { DataImport::Definition.new('Animals', 'tblAnimal', 'animals') }
     let(:articles) { DataImport::Definition.new('Articles', 'tblNewsMessage', 'articles') }
     let(:plan) { DataImport::ExecutionPlan.new }
     before do
       plan.add_definition(articles)
       plan.add_definition(people)
-      plan.add_definition(animals)
     end
 
     subject { DataImport::Runner.new(plan, mock_progress_class) }
 
     it 'runs a set of definitions' do
-      articles.should_receive(:run)
-      people.should_receive(:run)
-      animals.should_receive(:run)
+      articles.should_receive(:setup).ordered
+      articles.should_receive(:run).ordered
+      articles.should_receive(:teardown).ordered
+      people.should_receive(:setup).ordered
+      people.should_receive(:run).ordered
+      people.should_receive(:teardown).ordered
 
       subject.run
     end
 
     it ":only limits the definitions, which will be run" do
-      people.should_receive(:run)
+      articles.should_receive(:setup)
       articles.should_receive(:run)
+      articles.should_receive(:teardown)
 
-      subject.run :only => ['People', 'Articles']
+      subject.run :only => ['Articles']
     end
   end
 end

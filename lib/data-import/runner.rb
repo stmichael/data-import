@@ -16,7 +16,9 @@ module DataImport
       definitions_to_execute = dependency_resolver.resolve(options[:only])
       definitions_to_execute.each do |definition|
         bar = @progress_reporter.new(definition.name, definition.total_steps_required)
+        definition.setup
         definition.run(self, bar)
+        definition.teardown
         bar.finish
       end
     end

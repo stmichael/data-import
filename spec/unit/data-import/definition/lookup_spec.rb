@@ -1,10 +1,22 @@
+# -*- coding: utf-8 -*-
 require 'unit/spec_helper'
 
 describe DataImport::Definition::Lookup do
 
-  let(:example_class) do
+  let(:definition_class) do
     Class.new do
+      def setup; end
+      def run; end
+      def teardown; end
+    end
+  end
+  let(:example_class) do
+    Class.new(definition_class) do
       include DataImport::Definition::Lookup
+
+      def name
+        'Exämplé Definition'
+      end
     end
   end
 
@@ -101,5 +113,78 @@ describe DataImport::Definition::Lookup do
 
       subject.identify_by(:code, nil).should == nil
     end
+  end
+
+  describe 'lookup-table persistance' do
+    before do
+      subject.lookup_for :code
+      subject.add_mappings(1, :code => 'Milk Shake')
+      subject.add_mappings(2, :code => 'Burger')
+      subject.add_mappings(4, :code => 'Pizza')
+    end
+
+    let(:save_directory) { '/some/directory/example-definition' }
+    let(:save_path) { '/some/directory/example-definition/code.json' }
+    let(:lookup_table_hash) do
+      {'Milk Shake' => 1, 'Burger' => 2, 'Pizza' => 4}
+    end
+
+    it 'clears the lookup-table before every run' do
+      subject.run
+
+      lambda do
+        subject.identify_by(:code, 'Pizza').should_not == 4
+      end.should raise_error(ArgumentError, "no lookup-table defined named 'code'")
+    end
+
+    before do
+      DataImport.stub(:lookup_table_directory => '/some/directory')
+    end
+
+    context 'when lookup tables are not persisted' do
+      before { DataImport.should_receive(:persist_lookup_tables?).any_number_of_times.and_return(false) }
+
+      it 'does nothing' do
+        File.should_not_receive(:write)
+        File.should_not_receive(:read)
+
+        subject.setup
+        subject.teardown
+      end
+    end
+
+    context 'when lookup tables get persisted' do
+      before { DataImport.should_receive(:persist_lookup_tables?).any_number_of_times.and_return(true) }
+
+      it 'saves the lookup-table when the definition ran' do
+      FileUtils.should_receive(:mkdir_p).with(save_directory)
+        JSON.should_receive(:dump).with(lookup_table_hash).and_return('the JSON')
+        subject.should_receive(:write_json).with(save_path, 'the JSON')
+        subject.teardown
+      end
+
+      context 'when the lookup-table was persisted' do
+        before { File.should_receive(:exists?).with(save_path).and_return(true) }
+
+        it 'loads the lookup-table when the definition is initialized' do
+          File.should_receive(:read).
+            with(save_path).
+            and_return('the JSON')
+          JSON.should_receive(:parse).with('the JSON').and_return(lookup_table_hash)
+
+          subject.setup
+          subject.identify_by(:code, 'Pizza').should == 4
+        end
+      end
+
+      context 'when the lookup-table was not persisted' do
+        before { File.should_receive(:exists?).with(save_path).and_return(false) }
+
+        it 'skips the table' do
+          subject.setup
+        end
+      end
+    end
+
   end
 end

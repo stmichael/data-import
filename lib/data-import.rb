@@ -1,5 +1,6 @@
 
 require 'yaml'
+require 'json'
 require 'progressbar'
 require 'active_support/all'
 
@@ -22,6 +23,12 @@ class Time
 end
 
 module DataImport
+
+  mattr_accessor :lookup_table_directory
+
+  def self.persist_lookup_tables?
+    lookup_table_directory.present?
+  end
 
   def self.run_config!(config_path, options = {})
     plan = DataImport::Dsl.evaluate_import_config(config_path)

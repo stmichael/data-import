@@ -21,5 +21,17 @@ module DataImport
     def total_steps_required
       1
     end
+
+    def setup
+      # lifecycle-method before exection
+    end
+
+    def run
+      raise NotImplementedError, '#run must be implemented'
+    end
+
+    def teardown
+      # lifecycle-method after exection
+    end
   end
 end

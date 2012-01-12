@@ -1,9 +1,9 @@
-require 'data-import'
+require 'integration/spec_helper'
 
 describe "lookup tables" do
 
   in_memory_mapping do
-    import 'Articles' do
+    import 'Awesome Articles' do
       from 'tblArticles', :primary_key => 'sArticleId'
       to 'articles'
 
@@ -16,14 +16,14 @@ describe "lookup tables" do
     import 'Posts' do
       from 'tblPosts', :primary_key => 'sPostId'
       to 'posts'
-      dependencies 'Articles'
+      dependencies 'Awesome Articles'
 
       mapping 'sPostId' => :id
       mapping 'sArticleId' do |context, value|
-        { :article_id => context.definition('Articles').identify_by(:sArticleId, value) }
+        { :article_id => context.definition('Awesome Articles').identify_by(:sArticleId, value) }
       end
       mapping 'strArticleRef' do |context, value|
-        { :similar_article_id => context.definition('Articles').identify_by(:reference, value) }
+        { :similar_article_id => context.definition('Awesome Articles').identify_by(:reference, value) }
       end
     end
   end
@@ -75,6 +75,15 @@ describe "lookup tables" do
                                             {:id => 8, :article_id => 1, :similar_article_id => 2},
                                             {:id => 9, :article_id => 2, :similar_article_id => 1},
                                             {:id => 10, :article_id => nil, :similar_article_id => nil}]
+  end
+
+  it 'saves the lookup-tables after the migration' do
+    lookup_table_path = File.join(File.dirname(__FILE__), 'output')
+    FileUtils.rm_rf(lookup_table_path)
+    DataImport.lookup_table_directory = lookup_table_path
+    DataImport.run_plan!(plan)
+    lookup_table = File.read(File.join(lookup_table_path, 'awesome-articles', 'reference.json'))
+    JSON.parse(lookup_table).should == {"data-import-is-awesome" => 4, "ruby-is-awesome" => 5}
   end
 
 end

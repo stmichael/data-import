@@ -5,8 +5,50 @@ module DataImport
       def initialize(*args)
         @lookup_table_configurations = {}
         @lookup_tables = {}
+
         super
       end
+
+      def setup
+        if DataImport.persist_lookup_tables?
+          @lookup_tables.each_key do |table_name|
+            path = File.join(lookup_table_persistance_directory, "#{table_name}.json")
+            next unless File.exists?(path)
+            json = File.read(path)
+            @lookup_tables[table_name] = JSON.parse(json)
+          end
+        end
+
+        super
+      end
+
+      def run
+        @lookup_tables = {}
+        super
+      end
+
+      def teardown
+        if DataImport.persist_lookup_tables?
+          FileUtils.mkdir_p(lookup_table_persistance_directory)
+          @lookup_tables.each do |table_name, table|
+            json = JSON.dump(table)
+            path = File.join(lookup_table_persistance_directory, "#{table_name}.json")
+            write_json(path, json)
+          end
+        end
+
+        super
+      end
+
+      def lookup_table_persistance_directory
+        File.join(DataImport.lookup_table_directory, name.parameterize)
+      end
+      private :lookup_table_persistance_directory
+
+      def write_json(path, json)
+        File.open(path, 'w+') {|f| f.write(json)}
+      end
+      private :write_json
 
       def lookup_for(name, options = {})
         config = LookupTableConfig.new(name, options)
