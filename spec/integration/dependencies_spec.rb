@@ -69,4 +69,35 @@ describe 'definition dependencies' do
     target_database[:wheels].count.should == 1
   end
 
+  describe "circular dependencies" do
+    in_memory_mapping do
+      import 'Cats' do
+        dependencies 'Cats'
+      end
+
+      import 'People' do
+        dependencies 'Cats'
+      end
+    end
+
+    it 'recognizes circular dependencies' do
+      lambda do
+        DataImport.run_plan!(plan)
+      end.should raise_error("ciruclar dependencies: 'Cats' <-> 'Cats'")
+    end
+  end
+
+  describe "missing dependencies" do
+    in_memory_mapping do
+      import 'Dogs' do
+        dependencies 'Non-Existing-Owners'
+      end
+    end
+
+    it 'recognizes missing dependencies' do
+      lambda do
+        DataImport.run_plan!(plan)
+      end.should raise_error("no definition found for 'Non-Existing-Owners'")
+    end
+  end
 end
