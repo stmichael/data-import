@@ -4,10 +4,6 @@ module DataImport
     def initialize(plan, progress_reporter = ProgressBar)
       @plan = plan
       @progress_reporter = progress_reporter
-      @definitions = Hash[@plan.definitions.map do |definition|
-                            [definition.name, definition]
-                          end]
-
       @executed_definitions = []
     end
 
@@ -22,8 +18,7 @@ module DataImport
     end
 
     def definition(name)
-      raise "no definition found for '#{name}'" unless @definitions[name].present?
-      @definitions[name]
+      @plan.definition(name)
     end
 
     def before_filter
