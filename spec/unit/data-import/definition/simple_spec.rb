@@ -42,6 +42,24 @@ describe DataImport::Definition::Simple do
     end
   end
 
+  describe '#execution_options' do
+    before do
+      subject.source_primary_key = :sHomeID
+      subject.source_columns = [:sHomeID, :name, :location]
+      subject.source_distinct_columns = [:name, :location]
+      subject.source_order_columns = [:name]
+    end
+
+    it 'returns the options to query the source data' do
+      subject.execution_options.should == {
+        :primary_key => :sHomeID,
+        :columns => [:sHomeID, :name, :location],
+        :distinct => [:name, :location],
+        :order => [:name]
+      }
+    end
+  end
+
   describe '#run' do
     it 'executes the definition and displays the progress' do
       progress_reporter = stub

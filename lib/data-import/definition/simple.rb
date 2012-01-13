@@ -44,13 +44,18 @@ module DataImport
       end
 
       def total_steps_required
-        source_database.count(source_table_name, execution_options)
+        source_database.count(source_table_name, count_options)
       end
 
       def execution_options
+        count_options.merge(:primary_key => source_primary_key,
+                            :order => source_order_columns)
+      end
+
+      def count_options
         {:columns => source_columns, :distinct => source_distinct_columns}
       end
-      private :execution_options
+      private :count_options
 
     end
   end

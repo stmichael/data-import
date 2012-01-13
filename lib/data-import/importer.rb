@@ -9,12 +9,7 @@ module DataImport
 
     def run
       @definition.target_database.transaction do
-        options = {}
-        options[:primary_key] = @definition.source_primary_key
-        options[:columns] = @definition.source_columns
-        options[:distinct] = @definition.source_distinct_columns
-        options[:order] = @definition.source_order_columns
-        @definition.source_database.each_row(@definition.source_table_name, options) do |row|
+        @definition.source_database.each_row(@definition.source_table_name, @definition.execution_options) do |row|
           @context.before_filter.call(row) if @context.before_filter
           import_row row
           @progress_reporter.inc
