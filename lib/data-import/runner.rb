@@ -8,9 +8,9 @@ module DataImport
     end
 
     def run(options = {})
-      dependency_resolver = DependencyResolver.new(@plan.definitions)
-      definitions_to_execute = dependency_resolver.resolve(options[:only])
-      definitions_to_execute.each do |definition|
+      dependency_resolver = DependencyResolver.new(@plan)
+      resolved_plan = dependency_resolver.resolve(options[:only])
+      resolved_plan.definitions.each do |definition|
         bar = @progress_reporter.new(definition.name, definition.total_steps_required)
         definition.run(self, bar)
         bar.finish

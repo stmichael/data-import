@@ -7,8 +7,8 @@ describe DataImport::DependencyResolver do
     b = DataImport::Definition.new 'B', :source, :target
     c = DataImport::Definition.new 'C', :source, :target
 
-    resolver = DataImport::DependencyResolver.new([a, b, c])
-    resolver.resolve(['A', 'C']).map(&:name).should == ['A', 'C']
+    resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([a, b, c]))
+    resolver.resolve(['A', 'C']).definitions.map(&:name).should == ['A', 'C']
   end
 
   it 'executes leaf-definitions first and works to the top' do
@@ -26,9 +26,9 @@ describe DataImport::DependencyResolver do
     ab_a1_1.add_dependency('A-B-1')
     ab_a1_1.add_dependency('A1')
 
-    resolver = DataImport::DependencyResolver.new([ab_a1_1, ab_1, b, a, a_1])
+    resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([ab_a1_1, ab_1, b, a, a_1]))
 
-    resolver.resolve.map(&:name).should == ['A', 'B', 'A-B-1', 'A1', 'AB-A1-1']
+    resolver.resolve.definitions.map(&:name).should == ['A', 'B', 'A-B-1', 'A1', 'AB-A1-1']
   end
 
   it 'handles dependencies correctly when :only is present' do
@@ -38,9 +38,9 @@ describe DataImport::DependencyResolver do
     abc = DataImport::Definition.new 'ABC', :source, :target
     abc.add_dependency('AB')
 
-    resolver = DataImport::DependencyResolver.new([abc, a, ab])
+    resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([abc, a, ab]))
 
-    resolver.resolve(['ABC']).map(&:name).should == ['A', 'AB', 'ABC']
+    resolver.resolve(['ABC']).definitions.map(&:name).should == ['A', 'AB', 'ABC']
   end
 
   it "raises an exception when the dependencies can't be resolved" do
@@ -49,7 +49,7 @@ describe DataImport::DependencyResolver do
     a.add_dependency('B')
     b.add_dependency('A')
 
-    resolver = DataImport::DependencyResolver.new([a, b])
+    resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([a, b]))
 
     lambda do
       resolver.resolve
@@ -60,7 +60,7 @@ describe DataImport::DependencyResolver do
     a = DataImport::Definition.new 'A', :source, :target
     a.add_dependency('NOT_PRESENT')
 
-    resolver = DataImport::DependencyResolver.new([a])
+    resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([a]))
 
     lambda do
       resolver.resolve
@@ -75,8 +75,8 @@ describe DataImport::DependencyResolver do
     aba.add_dependency('AB')
     aba.add_dependency('A')
 
-    resolver = DataImport::DependencyResolver.new([a, aba, ab])
+    resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([a, aba, ab]))
 
-    resolver.resolve.map(&:name).should == ['A', 'AB', 'AB-A']
+    resolver.resolve.definitions.map(&:name).should == ['A', 'AB', 'AB-A']
   end
 end
