@@ -27,14 +27,6 @@ module DataImport
         @source_primary_key = value.to_sym unless value.nil?
       end
 
-      def definition(name = nil)
-        if name.nil?
-          self
-        else
-          DataImport.definitions[name] or raise ArgumentError
-        end
-      end
-
       def use_mode(mode)
         @mode = mode
       end

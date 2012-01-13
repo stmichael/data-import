@@ -26,22 +26,6 @@ describe DataImport::Definition::Simple do
     end
   end
 
-  describe "#definition" do
-    it "returns the definition of the importer if nothing is passed" do
-      subject.definition.should == subject
-    end
-
-    it "looks for the definition in the registered definition list if a name is passed" do
-      DataImport.stub(:definitions).and_return { {'abc' => :def} }
-      subject.definition('abc').should == :def
-    end
-
-    it "raises an error if no definition was found" do
-      DataImport.stub(:definitions).and_return { {} }
-      lambda { subject.definition('abc') }.should raise_error
-    end
-  end
-
   describe '#execution_options' do
     before do
       subject.source_primary_key = :sHomeID
