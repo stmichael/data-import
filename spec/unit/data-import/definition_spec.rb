@@ -8,6 +8,12 @@ describe DataImport::Definition do
     subject.total_steps_required.should == 1
   end
 
+  it '#run is implemented by subclasses' do
+    lambda do
+      subject.run
+    end.should raise_error(NotImplementedError, '#run must be implemented')
+  end
+
   describe "#dependencies" do
     it "can have dependent definitions which must run before" do
       subject.add_dependency 'b'

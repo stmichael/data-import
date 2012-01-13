@@ -31,4 +31,17 @@ describe DataImport do
       subject.run_plan!(plan, :only => ['A', 'B'])
     end
   end
+
+  describe 'configuration' do
+    before { DataImport.lookup_table_directory = nil }
+    it 'the directory for lookup-tables can be specified' do
+      DataImport.lookup_table_directory = '/tmp'
+      DataImport.lookup_table_directory.should == '/tmp'
+      DataImport.persist_lookup_tables?.should be_true
+    end
+
+    it 'when no directory for the lookup-tables was specified they will not be persisted' do
+      DataImport.persist_lookup_tables?.should be_false
+    end
+  end
 end
