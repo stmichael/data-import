@@ -8,7 +8,7 @@ describe DataImport::DependencyResolver do
     c = DataImport::Definition.new 'C', :source, :target
 
     resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([a, b, c]))
-    resolver.resolve(['A', 'C']).definitions.map(&:name).should == ['A', 'C']
+    resolver.resolve(:run_only => ['A', 'C']).definitions.map(&:name).should == ['A', 'C']
   end
 
   it 'executes leaf-definitions first and works to the top' do
@@ -40,7 +40,7 @@ describe DataImport::DependencyResolver do
 
     resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([abc, a, ab]))
 
-    resolver.resolve(['ABC']).definitions.map(&:name).should == ['A', 'AB', 'ABC']
+    resolver.resolve(:run_only => ['ABC']).definitions.map(&:name).should == ['A', 'AB', 'ABC']
   end
 
   it "raises an exception when the dependencies can't be resolved" do

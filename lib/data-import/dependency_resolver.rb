@@ -5,8 +5,8 @@ module DataImport
       @plan = plan
     end
 
-    def resolve(run_only = nil)
-      definitions_to_execute = definitions_for_execution(run_only)
+    def resolve(options = {})
+      definitions_to_execute = definitions_for_execution(options[:run_only])
       resolved_plan = ExecutionPlan.new
       while resolved_plan.size < definitions_to_execute.size
         did_execute = false
