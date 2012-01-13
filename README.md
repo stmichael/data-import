@@ -8,11 +8,12 @@ data-import is a data-migration framework. The goal of the project is to provide
 gem 'data-import'
 ```
 
-you can put your migration configuration in any file you like. We suggest something like `mapping.rb`
+you can put your migration configuration in any file you like. We suggest something like `mapping.rb`.
+You can find the various ways to connect described in the [sequel docs](http://sequel.rubyforge.org/rdoc/files/doc/opening_databases_rdoc.html).
 
 ```ruby
-source :sequel, 'sqlite:/'
-target :sequel, 'sqlite:/'
+source 'sqlite://legacy_blog.db'
+target :adapter => :postgres, :host => 'localhost', :user => 'user', :password => 'password', :database => 'blog'
 
 import 'Animals' do
   from 'tblAnimal', :primary_key => 'sAnimalID'

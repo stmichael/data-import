@@ -4,8 +4,8 @@ module TestingMacros
 
   def in_memory_mapping(&block)
     plan = DataImport::Dsl.define do
-      source :sequel, 'sqlite:/'
-      target :sequel, 'sqlite:/'
+      source 'sqlite:/'
+      target 'sqlite:/'
 
       instance_eval &block
     end

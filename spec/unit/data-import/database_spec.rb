@@ -1,4 +1,5 @@
 require 'unit/spec_helper'
+require 'stringio'
 
 describe DataImport::Database do
 
@@ -8,16 +9,23 @@ describe DataImport::Database do
   end
 
   describe ".connect" do
-    it "returns a connection object from the correct adapter" do
-      subject.stub(:find_adapter).and_return { TestAdapter }
-      TestAdapter.should_receive(:connect)
-      subject.connect(:sequel)
+    let(:options) { {:database => 'example', :username => 'bob', :password => 'secret'} }
+    let(:output) { StringIO.new }
+    before do
+      @stdout = $stdout
+      $stdout = output
     end
-  end
+    after { $stdout = @stdout }
+    it 'outputs deprecation warnings when called with an adapter name' do
+      DataImport::Adapters::Sequel.should_receive(:connect).with(options)
+      subject.connect(:sequel, options)
+      output.rewind
+      output.read.should == "DEPRECATION WARNING: specifiying the :sequel adapter explicitly will be removed in future versions\n"
+    end
 
-  describe ".find_adapter" do
-    it "returns nil if the adapter is not supported" do
-      subject.send(:find_adapter, :abc).should be_nil
+    it "returns a connection object from the correct adapter" do
+      DataImport::Adapters::Sequel.should_receive(:connect).with(options)
+      subject.connect(options)
     end
   end
 

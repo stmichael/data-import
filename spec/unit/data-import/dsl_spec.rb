@@ -11,8 +11,8 @@ describe DataImport::Dsl do
       it "executes the content of the config in a new DSL context" do
         File.stub(:read).and_return do
           <<-RUBY
-          source :sequel, 'sqlite:/'
-          target :sequel, 'sqlite:/'
+          source 'sqlite:/'
+          target 'sqlite:/'
           RUBY
         end
         DataImport::ExecutionPlan.should_receive(:new).and_return(plan)
