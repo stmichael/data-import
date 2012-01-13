@@ -4,7 +4,6 @@ module DataImport
     def initialize(plan, progress_reporter = ProgressBar)
       @plan = plan
       @progress_reporter = progress_reporter
-      @executed_definitions = []
     end
 
     def run(options = {})
