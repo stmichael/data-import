@@ -18,8 +18,21 @@ module DataImport
     end
 
     def definition(name)
-      raise "no definition found for '#{name}'" unless @definitions[name].present?
-      @definitions[name]
+      if contains?(name)
+        @definitions[name]
+      else
+        raise "no definition found for '#{name}'"
+      end
+    end
+
+    def contains?(names)
+      Array(names).all? do |name|
+        @definitions.has_key?(name)
+      end
+    end
+
+    def size
+      @definitions.size
     end
 
   end

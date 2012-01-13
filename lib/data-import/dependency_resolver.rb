@@ -6,15 +6,15 @@ module DataImport
     end
 
     def resolve(run_only = nil)
-      definition_order_by_name = []
       definitions_to_execute = definitions_for_execution(run_only)
-      while definition_order_by_name.count < definitions_to_execute.count
+      resolved_plan = ExecutionPlan.new
+      while resolved_plan.size < definitions_to_execute.size
         did_execute = false
         definitions_to_execute.each do |name|
           candidate = @plan.definition(name)
-          next if definition_order_by_name.include?(name)
-          if (candidate.dependencies - definition_order_by_name).blank?
-            definition_order_by_name << name
+          next if resolved_plan.contains?(name)
+          if resolved_plan.contains?(candidate.dependencies)
+            resolved_plan.add_definition(candidate)
             did_execute = true
           end
         end
@@ -22,7 +22,7 @@ module DataImport
           raise "something went wrong! Could not execute all necessary definitions: #{candidate.dependencies - @@executed_definitions}"
         end
       end
-      ExecutionPlan.new(definition_order_by_name.map {|name| @plan.definition(name) })
+      resolved_plan
     end
 
     def definitions_for_execution(run_only = nil)
