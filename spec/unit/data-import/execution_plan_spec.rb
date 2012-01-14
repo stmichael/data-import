@@ -23,29 +23,14 @@ describe DataImport::ExecutionPlan do
     end.should raise_error(DataImport::MissingDefinitionError)
   end
 
-  context 'empty plan' do
-    it 'should have a size of 0' do
-      subject.size == 0
-    end
-
-    it 'definitions can be added' do
-      subject.add_definition(people)
-      subject.add_definition(houses)
-      subject.definitions.should == [people, houses]
-    end
-
-    it 'does not contain any definitions' do
-      subject.contains?('People').should be_false
-      subject.contains?(['People', 'House']).should be_false
-    end
+  it 'definitions can be added' do
+    subject.add_definition(people)
+    subject.add_definition(houses)
+    subject.definitions.should == [people, houses]
   end
 
   context 'plan with definitions' do
     subject { DataImport::ExecutionPlan.new(definitions) }
-
-    it 'the size is the amount of added definitions' do
-      subject.size.should == 2
-    end
 
     it 'stores the order the definitions were added' do
       cats = stub(:name => 'Cats')
@@ -58,14 +43,6 @@ describe DataImport::ExecutionPlan do
 
     it 'definitions can be fetched by name' do
       subject.definition('People').should == people
-    end
-
-    it 'contains a definition' do
-      subject.contains?('People').should be_true
-    end
-
-    it 'contains multiple definitions' do
-      subject.contains?(['People', 'House']).should be_true
     end
   end
 

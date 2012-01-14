@@ -18,22 +18,11 @@ module DataImport
     end
 
     def definition(name)
-      if contains?(name)
+      if @definitions.has_key?(name)
         @definitions[name]
       else
         raise MissingDefinitionError.new(name)
       end
     end
-
-    def contains?(names)
-      Array(names).all? do |name|
-        @definitions.has_key?(name)
-      end
-    end
-
-    def size
-      @definitions.size
-    end
-
   end
 end
