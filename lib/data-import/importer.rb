@@ -24,8 +24,7 @@ module DataImport
       mapped_row = {}
       @definition.mappings.each do |old_key, new_key|
         if new_key.respond_to?(:call)
-          keys = old_key
-          keys = [keys] unless keys.is_a? Array
+          keys = Array(old_key)
           params = [@context] + keys.map{|key| row[key.to_sym]}
           mapped_values = @definition.instance_exec(*params, &new_key)
           mapped_row.merge! mapped_values if mapped_values.present?
