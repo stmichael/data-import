@@ -8,6 +8,8 @@ module DataImport
     def resolve(options = {})
       definitions_to_execute = definitions_for_execution(options[:run_only])
       resolved_plan = ExecutionPlan.new
+      # TODO: refactor the before_filter away from the ExecutionPlan
+      resolved_plan.before_filter = @plan.before_filter
       while resolved_plan.size < definitions_to_execute.size
         did_execute = false
         definitions_to_execute.each do |name|

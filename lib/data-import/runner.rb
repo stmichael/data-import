@@ -11,7 +11,7 @@ module DataImport
       resolved_plan = dependency_resolver.resolve(:run_only => options[:only])
       resolved_plan.definitions.each do |definition|
         bar = @progress_reporter.new(definition.name, definition.total_steps_required)
-        definition.run(@plan, bar)
+        definition.run(resolved_plan, bar)
         bar.finish
       end
     end
