@@ -2,29 +2,29 @@ require 'unit/spec_helper'
 
 describe DataImport::DependencyResolver do
 
+  let(:stub_definition) {
+    lambda { |name, *dependencies|
+      dependency_names = dependencies.map {|dependency| dependency.is_a?(String) ? dependency : dependency.name}
+      stub(name, :name => name, :dependencies => dependency_names)
+    }
+  }
+
   it 'can limit the definitions which should run' do
-    a = DataImport::Definition.new 'A', :source, :target
-    b = DataImport::Definition.new 'B', :source, :target
-    c = DataImport::Definition.new 'C', :source, :target
+    a = stub_definition['A']
+    b = stub_definition['B']
+    c = stub_definition['C']
 
     resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([a, b, c]))
     resolver.resolve(:run_only => ['A', 'C']).definitions.map(&:name).should == ['A', 'C']
   end
 
   it 'executes leaf-definitions first and works to the top' do
-    a = DataImport::Definition.new 'A', :source, :target
-    b = DataImport::Definition.new 'B', :source, :target
+    a = stub_definition['A']
+    b = stub_definition['B']
 
-    a_1 = DataImport::Definition.new 'A1', :source, :target
-    a_1.add_dependency('A')
-
-    ab_1 = DataImport::Definition.new 'A-B-1', :source, :target
-    ab_1.add_dependency('A')
-    ab_1.add_dependency('B')
-
-    ab_a1_1 = DataImport::Definition.new 'AB-A1-1', :source, :target
-    ab_a1_1.add_dependency('A-B-1')
-    ab_a1_1.add_dependency('A1')
+    a_1 = stub_definition['A1', a]
+    ab_1 = stub_definition['A-B-1', a, b]
+    ab_a1_1 = stub_definition['AB-A1-1', ab_1, a_1]
 
     resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([ab_a1_1, ab_1, b, a, a_1]))
 
@@ -32,11 +32,9 @@ describe DataImport::DependencyResolver do
   end
 
   it 'handles dependencies correctly when :only is present' do
-    a = DataImport::Definition.new 'A', :source, :target
-    ab = DataImport::Definition.new 'AB', :source, :target
-    ab.add_dependency('A')
-    abc = DataImport::Definition.new 'ABC', :source, :target
-    abc.add_dependency('AB')
+    a = stub_definition['A']
+    ab = stub_definition['AB', a]
+    abc = stub_definition['ABC', a, ab]
 
     resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([abc, a, ab]))
 
@@ -44,11 +42,8 @@ describe DataImport::DependencyResolver do
   end
 
   it "raises an exception when the dependencies can't be resolved" do
-    a = DataImport::Definition.new 'A', :source, :target
-    b = DataImport::Definition.new 'B', :source, :target
-    a.add_dependency('B')
-    b.add_dependency('A')
-
+    a = stub_definition['A', 'B']
+    b = stub_definition['B', 'A']
     resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([a, b]))
 
     lambda do
@@ -57,8 +52,7 @@ describe DataImport::DependencyResolver do
   end
 
   it 'raises an error when invalid dependencies are found' do
-    a = DataImport::Definition.new 'A', :source, :target
-    a.add_dependency('NOT_PRESENT')
+    a = stub_definition['A', 'NOT_PRESENT']
 
     resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([a]))
 
@@ -68,12 +62,9 @@ describe DataImport::DependencyResolver do
   end
 
   it 'can resolve dependencies which appear to be circular but are not' do
-    a = DataImport::Definition.new 'A', :source, :target
-    ab = DataImport::Definition.new 'AB', :source, :target
-    ab.add_dependency('A')
-    aba = DataImport::Definition.new 'AB-A', :source, :target
-    aba.add_dependency('AB')
-    aba.add_dependency('A')
+    a = stub_definition['A']
+    ab = stub_definition['AB', 'A']
+    aba = stub_definition['AB-A', 'AB', 'A']
 
     resolver = DataImport::DependencyResolver.new(DataImport::ExecutionPlan.new([a, aba, ab]))
 
