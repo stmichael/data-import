@@ -64,6 +64,8 @@ describe DataImport::Importer do
   end
 
   context 'after row blocks' do
+    let(:target_writer) { mock }
+    before { definition.target_writer = target_writer }
     it "run after the data import" do
       input_rows = []
       output_rows = []
@@ -74,51 +76,52 @@ describe DataImport::Importer do
 
       subject.should_receive(:map_row).with({:id => 1}).and_return({:new_id => 1})
       subject.should_receive(:map_row).with({:id => 2}).and_return({:new_id => 2})
-      definition.target_database.should_receive(:insert_row).any_number_of_times
-      subject.send(:import_row, :id => 1)
-      subject.send(:import_row, :id => 2)
+      target_writer.should_receive(:write_row).any_number_of_times
+      subject.import_row(:id => 1)
+      subject.import_row(:id => 2)
 
       input_rows.should == [{:id => 1}, {:id => 2}]
       output_rows.should == [{:new_id => 1}, {:new_id => 2}]
     end
   end
 
-  describe "#map_row" do
+  context do
     let(:id_mapping) { mock }
     let(:name_mapping) { mock }
     let(:mappings) { [id_mapping, name_mapping] }
-    let(:definition) { stub(:mappings => mappings) }
-    let(:context) { stub() }
+    let(:definition) { stub(:mappings => mappings,
+                            :target_writer => target_writer,
+                            :after_row_blocks => []) }
+    let(:context) { stub }
+    let(:target_writer) { mock }
+
 
     subject { DataImport::Importer.new(context, definition, nil) }
 
-    it 'calls apply for all mappings' do
-      legacy_row = {:legacy_id => 1, :legacy_name => 'hans'}
-      id_mapping.should_receive(:apply).with(definition, context, legacy_row).and_return(:id => 2)
-      name_mapping.should_receive(:apply).with(definition, context, legacy_row).and_return(:name => 'peter')
-      subject.map_row(legacy_row).should == {:id => 2, :name => 'peter'}
-    end
-  end
-
-  describe "#import_row" do
-    it "executes the insertion" do
-      definition.stub(:target_table_name).and_return { :table }
-      definition.target_database.should_receive(:insert_row).with(:table, {})
-      subject.send(:import_row, :id => 1)
+    describe "#map_row" do
+      it 'calls apply for all mappings' do
+        legacy_row = {:legacy_id => 1, :legacy_name => 'hans'}
+        id_mapping.should_receive(:apply).with(definition, context, legacy_row).and_return(:id => 2)
+        name_mapping.should_receive(:apply).with(definition, context, legacy_row).and_return(:name => 'peter')
+        subject.map_row(legacy_row).should == {:id => 2, :name => 'peter'}
+      end
     end
 
-    it "adds the generated id to the id mapping of the definition" do
-      definition.target_database.stub(:insert_row).and_return { 15 }
-      definition.should_receive(:row_imported).with(15, {:id => 1})
-      subject.send(:import_row, :id => 1)
-    end
+    describe "#import_row" do
+      let(:row) { {:id => 1} }
+      before { subject.stub(:map_row => row) }
 
-    it 'calls update_row for definitions with a mode uf :update' do
-      definition.target_table_name = 'target_table'
-      definition.use_mode(:update)
-      definition.target_database.should_receive(:update_row).with('target_table', {})
+      it "executes the insertion" do
+        target_writer.should_receive(:write_row).with({:id => 1})
+        definition.stub(:row_imported)
+        subject.import_row(row)
+      end
 
-      subject.send(:import_row, :id => 1)
+      it "adds the generated id to the id mapping of the definition" do
+        definition.target_writer.stub(:write_row).and_return(15)
+        definition.should_receive(:row_imported).with(15, {:id => 1})
+        subject.import_row(:id => 1)
+      end
     end
   end
 

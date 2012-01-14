@@ -37,10 +37,6 @@ module DataImport
         end
       end
 
-      def insert_row(table, row)
-        @db.from(table).insert(row)
-      end
-
       def update_row(table, row)
         id = row.delete(:id) || row.delete('id')
         @db.from(table).filter(:id => id).update(row)

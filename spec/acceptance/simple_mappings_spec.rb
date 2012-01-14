@@ -24,19 +24,19 @@ describe "simple mappings" do
       after_row do |context, old_row, mapped_row|
         if old_row[:dteBorn].present?
           event = '%s was born' % mapped_row[:name]
-          target_database.insert_row(:animal_logs, {:occured_at => old_row[:dteBorn], :event => event})
+          target_database.db[:animal_logs].insert(:occured_at => old_row[:dteBorn], :event => event)
         end
 
         if old_row[:dteDied].present?
           event = '%s died' % mapped_row[:name]
-          target_database.insert_row(:animal_logs, {:occured_at => old_row[:dteDied], :event => event})
+          target_database.db[:animal_logs].insert(:occured_at => old_row[:dteDied], :event => event)
         end
       end
 
       after do
-        target_database.insert_row(:danger_ratings, {:id => 1, :description => 'none'})
-        target_database.insert_row(:danger_ratings, {:id => 2, :description => 'medium'})
-        target_database.insert_row(:danger_ratings, {:id => 3, :description => 'high'})
+        target_database.db[:danger_ratings].insert(:id => 1, :description => 'none')
+        target_database.db[:danger_ratings].insert(:id => 2, :description => 'medium')
+        target_database.db[:danger_ratings].insert(:id => 3, :description => 'high')
       end
     end
   end

@@ -16,9 +16,13 @@ module DataImport
         definition.source_dataset = dataset
       end
 
-      def to(name, options = {})
-        definition.target_table_name = name
-        definition.use_mode(:update) if options[:mode] == :update
+      def to(table_name, options = {})
+        writer = if options[:mode] == :update
+                   DataImport::Sequel::UpdateWriter.new(definition.target_database, table_name)
+                 else
+                   DataImport::Sequel::InsertWriter.new(definition.target_database, table_name)
+                 end
+        definition.target_writer = writer
       end
 
       def mapping(*hash_or_symbols, &block)

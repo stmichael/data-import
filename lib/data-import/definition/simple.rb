@@ -5,9 +5,8 @@ module DataImport
       include Lookup
 
       attr_accessor :target_table_name
-      attr_accessor :source_dataset, :target_dataset
+      attr_accessor :source_dataset, :target_writer
       attr_accessor :after_blocks, :after_row_blocks
-      attr_reader :mode
 
       def initialize(name, source_database, target_database)
         super
@@ -23,14 +22,6 @@ module DataImport
 
       def add_mapping(mapping)
         @mappings << mapping
-      end
-
-      def source_primary_key=(value)
-        @source_primary_key = value.to_sym unless value.nil?
-      end
-
-      def use_mode(mode)
-        @mode = mode
       end
 
       def run(context, progress_reporter)

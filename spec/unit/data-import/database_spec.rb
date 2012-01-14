@@ -61,27 +61,4 @@ describe DataImport::Database::Connection do
       subject.transaction &block
     end
   end
-
-  describe "#insert_row" do
-    it "inserts a single row into the database" do
-      table.should_receive(:insert).with(:id => 29)
-      subject.insert_row(:abc, :id => 29)
-    end
-  end
-
-  describe "#update_row" do
-    it 'updates the row with the given id' do
-      filtered_records = stub
-      table.should_receive(:filter).with(:id => 9).and_return(filtered_records)
-      filtered_records.should_receive(:update).with(:name => 'Hans', :alter => 17)
-      subject.update_row(:abc, {:id => 9, :name => 'Hans', :alter => 17})
-    end
-
-    it 'works with string keys' do
-      filtered_records = stub
-      table.should_receive(:filter).with(:id => 11).and_return(filtered_records)
-      filtered_records.should_receive(:update).with('name' => 'Hans', 'alter' => 17)
-      subject.update_row(:abc, {'id' => 11, 'name' => 'Hans', 'alter' => 17})
-    end
-  end
 end

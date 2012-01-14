@@ -33,14 +33,18 @@ describe DataImport::Dsl::Import do
   end
 
   describe "#to" do
-    it "saves the target table name to the definition" do
-      subject.to 'target_table'
-      definition.target_table_name.should == 'target_table'
+    it "assigns a table-writer for the given table to the definition" do
+      writer = stub
+      DataImport::Sequel::InsertWriter.should_receive(:new).with(target, 'tblChickens').and_return(writer)
+      subject.to 'tblChickens'
+      definition.target_writer.should == writer
     end
 
-    it 'accepts a :mode option' do
-      subject.to 'target_table', :mode => :update
-      definition.mode.should == :update
+    it 'uses an UpdateWriter when the :mode is set to :update' do
+      writer = stub
+      DataImport::Sequel::UpdateWriter.should_receive(:new).with(target, 'tblFoxes').and_return(writer)
+      subject.to 'tblFoxes', :mode => :update
+      definition.target_writer.should == writer
     end
   end
 

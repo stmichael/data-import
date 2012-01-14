@@ -21,4 +21,16 @@ module DataImport
       super(MESSAGE % args)
     end
   end
+
+  class MissingIdError < RuntimeError
+    MESSAGE = <<-ERROR
+      the mapped row did not contain an :id. This column is required for updates!
+        - row: %s
+    ERROR
+
+    def initialize(*args)
+      super(MESSAGE % args)
+    end
+  end
+
 end
