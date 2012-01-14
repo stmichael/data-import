@@ -5,7 +5,7 @@ module DataImport
       include Lookup
 
       attr_accessor :target_table_name
-      attr_accessor :source_dataset, :target_writer
+      attr_accessor :reader, :writer
       attr_accessor :after_blocks, :after_row_blocks
 
       def initialize(name, source_database, target_database)
@@ -29,7 +29,7 @@ module DataImport
       end
 
       def total_steps_required
-        source_dataset.count
+        reader.count
       end
 
       class NameMapping

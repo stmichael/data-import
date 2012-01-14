@@ -11,11 +11,11 @@ describe DataImport::Dsl::Import do
   describe "#from" do
     context 'when a table-name is passed' do
       it "assigns the source dataset to the definition" do
-        dataset = stub
-        DataImport::Sequel::Table.should_receive(:new).with(source, 'tblConversions').and_return(dataset)
+        reader = stub
+        DataImport::Sequel::Table.should_receive(:new).with(source, 'tblConversions').and_return(reader)
 
         subject.from 'tblConversions'
-        definition.source_dataset.should == dataset
+        definition.reader.should == reader
       end
     end
 
@@ -23,11 +23,11 @@ describe DataImport::Dsl::Import do
       it 'uses the block to build the base query' do
         custom_dataset = lambda { |db| }
 
-        dataset = stub
-        DataImport::Sequel::Dataset.should_receive(:new).with(source, custom_dataset).and_return(dataset)
+        reader = stub
+        DataImport::Sequel::Dataset.should_receive(:new).with(source, custom_dataset).and_return(reader)
 
         subject.from &custom_dataset
-        definition.source_dataset.should == dataset
+        definition.reader.should == reader
       end
     end
   end
@@ -37,14 +37,14 @@ describe DataImport::Dsl::Import do
       writer = stub
       DataImport::Sequel::InsertWriter.should_receive(:new).with(target, 'tblChickens').and_return(writer)
       subject.to 'tblChickens'
-      definition.target_writer.should == writer
+      definition.writer.should == writer
     end
 
     it 'uses an UpdateWriter when the :mode is set to :update' do
       writer = stub
       DataImport::Sequel::UpdateWriter.should_receive(:new).with(target, 'tblFoxes').and_return(writer)
       subject.to 'tblFoxes', :mode => :update
-      definition.target_writer.should == writer
+      definition.writer.should == writer
     end
   end
 

@@ -12,11 +12,11 @@ describe DataImport::Importer do
   subject { DataImport::Importer.new(context, definition, progress_reporter) }
 
   describe "#run" do
-    let(:source_dataset) { mock }
-    before { definition.stub(:source_dataset => source_dataset) }
+    let(:reader) { mock }
+    before { definition.stub(:reader => reader) }
 
     it "call #import_row for each row" do
-      definition.source_dataset.should_receive(:each_row).
+      definition.reader.should_receive(:each_row).
         and_yield(:a => :b).
         and_yield(:c => :d)
 
@@ -28,7 +28,7 @@ describe DataImport::Importer do
 
     context 'after blocks' do
       before do
-        definition.source_dataset.stub(:each_row)
+        definition.reader.stub(:each_row)
       end
 
       it "run after the data import" do
@@ -64,8 +64,8 @@ describe DataImport::Importer do
   end
 
   context 'after row blocks' do
-    let(:target_writer) { mock }
-    before { definition.target_writer = target_writer }
+    let(:writer) { mock }
+    before { definition.writer = writer }
     it "run after the data import" do
       input_rows = []
       output_rows = []
@@ -76,7 +76,7 @@ describe DataImport::Importer do
 
       subject.should_receive(:map_row).with({:id => 1}).and_return({:new_id => 1})
       subject.should_receive(:map_row).with({:id => 2}).and_return({:new_id => 2})
-      target_writer.should_receive(:write_row).any_number_of_times
+      writer.should_receive(:write_row).any_number_of_times
       subject.import_row(:id => 1)
       subject.import_row(:id => 2)
 
@@ -90,10 +90,10 @@ describe DataImport::Importer do
     let(:name_mapping) { mock }
     let(:mappings) { [id_mapping, name_mapping] }
     let(:definition) { stub(:mappings => mappings,
-                            :target_writer => target_writer,
+                            :writer => writer,
                             :after_row_blocks => []) }
     let(:context) { stub }
-    let(:target_writer) { mock }
+    let(:writer) { mock }
 
 
     subject { DataImport::Importer.new(context, definition, nil) }
@@ -112,13 +112,13 @@ describe DataImport::Importer do
       before { subject.stub(:map_row => row) }
 
       it "executes the insertion" do
-        target_writer.should_receive(:write_row).with({:id => 1})
+        writer.should_receive(:write_row).with({:id => 1})
         definition.stub(:row_imported)
         subject.import_row(row)
       end
 
       it "adds the generated id to the id mapping of the definition" do
-        definition.target_writer.stub(:write_row).and_return(15)
+        definition.writer.stub(:write_row).and_return(15)
         definition.should_receive(:row_imported).with(15, {:id => 1})
         subject.import_row(:id => 1)
       end

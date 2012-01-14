@@ -8,12 +8,12 @@ module DataImport
       end
 
       def from(table_name = nil, options = {}, &block)
-        dataset = if block_given?
+        reader = if block_given?
                     DataImport::Sequel::Dataset.new(definition.source_database, block)
                   else
                     DataImport::Sequel::Table.new(definition.source_database, table_name, &block)
                   end
-        definition.source_dataset = dataset
+        definition.reader = reader
       end
 
       def to(table_name, options = {})
@@ -22,7 +22,7 @@ module DataImport
                  else
                    DataImport::Sequel::InsertWriter.new(definition.target_database, table_name)
                  end
-        definition.target_writer = writer
+        definition.writer = writer
       end
 
       def mapping(*hash_or_symbols, &block)
