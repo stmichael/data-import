@@ -21,7 +21,7 @@ module DataImport
       if contains?(name)
         @definitions[name]
       else
-        raise "no definition found for '#{name}'"
+        raise MissingDefinitionError.new(name)
       end
     end
 

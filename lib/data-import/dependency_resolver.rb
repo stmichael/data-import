@@ -36,7 +36,7 @@ module DataImport
       definition = @plan.definition(name)
       direct_dependencies = definition.dependencies
       indirect_dependencies = direct_dependencies.map do |dep|
-        raise RuntimeError, "ciruclar dependencies: '#{name}' <-> '#{dep}'" if visited_definitions.include?(dep)
+        raise CircularDependencyError.new(name, dep) if visited_definitions.include?(dep)
         dependencies(dep, visited_definitions + [name])
       end.flatten
       direct_dependencies + indirect_dependencies

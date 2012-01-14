@@ -20,7 +20,7 @@ describe DataImport::ExecutionPlan do
   it 'raises an error when a non-existing definition is fetched' do
     lambda do
       subject.definition('I-do-not-exist')
-    end.should raise_error("no definition found for 'I-do-not-exist'")
+    end.should raise_error(DataImport::MissingDefinitionError)
   end
 
   context 'empty plan' do

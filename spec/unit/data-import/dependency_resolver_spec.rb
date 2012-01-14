@@ -53,7 +53,7 @@ describe DataImport::DependencyResolver do
 
     lambda do
       resolver.resolve
-    end.should raise_error(RuntimeError, "ciruclar dependencies: 'B' <-> 'A'")
+    end.should raise_error(DataImport::CircularDependencyError)
   end
 
   it 'raises an error when invalid dependencies are found' do
@@ -64,7 +64,7 @@ describe DataImport::DependencyResolver do
 
     lambda do
       resolver.resolve
-    end.should raise_error(RuntimeError, "no definition found for 'NOT_PRESENT'")
+    end.should raise_error(DataImport::MissingDefinitionError)
   end
 
   it 'can resolve dependencies which appear to be circular but are not' do

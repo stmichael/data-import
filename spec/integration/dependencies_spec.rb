@@ -83,7 +83,7 @@ describe 'definition dependencies' do
     it 'recognizes circular dependencies' do
       lambda do
         DataImport.run_plan!(plan)
-      end.should raise_error("ciruclar dependencies: 'Cats' <-> 'Cats'")
+      end.should raise_error(DataImport::CircularDependencyError)
     end
   end
 
@@ -97,7 +97,42 @@ describe 'definition dependencies' do
     it 'recognizes missing dependencies' do
       lambda do
         DataImport.run_plan!(plan)
-      end.should raise_error("no definition found for 'Non-Existing-Owners'")
+      end.should raise_error(DataImport::MissingDefinitionError)
+    end
+  end
+
+  describe "unloaded dependencies" do
+    in_memory_mapping do
+      import 'Cats' do
+        from 'LegacyCats', :primary_key => 'ID'
+        to 'cats'
+
+        mapping 'sOwnerID' do |context, value|
+          context.definition('Owners')
+          {}
+        end
+      end
+
+      import 'Owners' do
+      end
+    end
+
+    database_setup do
+      source.create_table :LegacyCats do
+        primary_key :ID
+        Integer :sOwnerID
+      end
+      target.create_table :cats do
+        primary_key :id
+      end
+
+      source[:LegacyCats].insert(:ID => 1, :sOwnerID => 1)
+    end
+
+    it 'recognizes unloaded dependencies' do
+      lambda do
+        DataImport.run_plan!(plan, :only => ['Cats'])
+      end.should raise_error(DataImport::MissingDefinitionError)
     end
   end
 end
