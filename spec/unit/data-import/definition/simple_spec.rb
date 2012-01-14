@@ -114,6 +114,20 @@ describe 'mappings' do
           subject.apply(definition, context, {:sLegacyID => 3, :strLegacyName => 'Times four: '}).should == {:result => 'Times four: 12'}
         end
       end
+
+      context 'with an sterisk (*)' do
+        subject { described_class.new('*', a_block) }
+        let(:a_block) {
+          lambda { |context, row|
+            {:received_row => row}
+          }
+        }
+
+        it 'passes the wole row to the block' do
+          row = {:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'}
+          subject.apply(definition, context, row).should == {:received_row => row}
+        end
+      end
     end
   end
 

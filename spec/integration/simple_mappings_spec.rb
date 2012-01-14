@@ -17,6 +17,9 @@ describe "simple mappings" do
       mapping 'strAnimalTitleText', 'sAnimalAge' do |context, title, age|
         {:formatted_name_cache => "%s (%d)" % [title, age]}
       end
+      mapping '*' do |context, row|
+        {:legacy_backup => "ID was #{row[:sAnimalID]}"}
+      end
 
       after_row do |context, old_row, mapped_row|
         if old_row[:dteBorn].present?
@@ -52,6 +55,7 @@ describe "simple mappings" do
     target.create_table :animals do
       primary_key :id
       String :name
+      String :legacy_backup
       Integer :age
       Integer :danger_rating
       String :formatted_name_cache
@@ -91,9 +95,12 @@ describe "simple mappings" do
 
   it 'mapps columns to the new schema' do
     DataImport.run_plan!(plan)
-    target_database[:animals].to_a.should == [{:id => 1, :name => "Tiger", :age => 23, :danger_rating => 3, :formatted_name_cache => 'Tiger (23)'},
-                                              {:id => 99, :name => "Cat", :age => 5, :danger_rating => 1, :formatted_name_cache => 'Cat (5)'},
-                                              {:id => 1293, :name => "Horse", :age => 11, :danger_rating => 2, :formatted_name_cache => 'Horse (11)'}]
+    target_database[:animals].to_a.should == [{:id => 1, :name => "Tiger", :age => 23, :danger_rating => 3,
+                                                :formatted_name_cache => 'Tiger (23)', :legacy_backup => "ID was 1"},
+                                              {:id => 99, :name => "Cat", :age => 5, :danger_rating => 1,
+                                                :formatted_name_cache => 'Cat (5)', :legacy_backup => "ID was 99"},
+                                              {:id => 1293, :name => "Horse", :age => 11, :danger_rating => 2,
+                                                :formatted_name_cache => 'Horse (11)', :legacy_backup => "ID was 1293"}]
   end
 
   it 'runs after blocks after the rows were imported' do

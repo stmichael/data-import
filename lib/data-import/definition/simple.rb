@@ -76,7 +76,11 @@ module DataImport
         end
 
         def apply(definition, context, row)
-          arguments = [context] + @columns.map {|column| row[column] }
+          arguments = [context] + if @columns == [:*]
+                                    [row]
+                                  else
+                                    @columns.map {|column| row[column] }
+                                  end
           definition.instance_exec(*arguments, &@block)
         end
       end
