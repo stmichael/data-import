@@ -11,17 +11,12 @@ module DataImport
       # TODO: refactor the before_filter away from the ExecutionPlan
       resolved_plan.before_filter = @plan.before_filter
       while resolved_plan.size < definitions_to_execute.size
-        did_execute = false
         definitions_to_execute.each do |name|
           candidate = @plan.definition(name)
           next if resolved_plan.contains?(name)
           if resolved_plan.contains?(candidate.dependencies)
             resolved_plan.add_definition(candidate)
-            did_execute = true
           end
-        end
-        unless did_execute
-          raise "something went wrong! Could not execute all necessary definitions: #{candidate.dependencies - @@executed_definitions}"
         end
       end
       resolved_plan
