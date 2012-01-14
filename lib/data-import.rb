@@ -1,4 +1,3 @@
-
 require 'yaml'
 require 'progressbar'
 require 'active_support/all'

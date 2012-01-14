@@ -60,7 +60,7 @@ module DataImport
           raise CircularDependencyError.new(name, dep) if visited_definitions.include?(dep)
           recursive_dependencies(dep, visited_definitions + [name])
         end.flatten
-        direct_dependencies(name) + indirect_dependencies
+        indirect_dependencies + direct_dependencies(name)
       end
       private :recursive_dependencies
     end

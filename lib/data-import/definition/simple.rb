@@ -62,7 +62,7 @@ module DataImport
 
         def apply(_definition, _context, row)
           if row.has_key?(@from)
-            { @to => row[@from]}
+            { @to => row[@from] }
           else
             {}
           end

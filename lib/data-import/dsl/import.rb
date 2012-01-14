@@ -21,9 +21,7 @@ module DataImport
 
       def mapping(*hash_or_symbols, &block)
         mapping = if hash_or_symbols.first.is_a? Hash
-                    mapping_attributes = hash_or_symbols.first
-                    Definition::Simple::NameMapping.new(mapping_attributes.keys.first,
-                                                        mapping_attributes.values.first)
+                    Definition::Simple::NameMapping.new(*hash_or_symbols.first.flatten)
                   else
                     Definition::Simple::BlockMapping.new(hash_or_symbols, block)
                   end
