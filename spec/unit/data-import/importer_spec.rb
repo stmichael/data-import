@@ -8,23 +8,15 @@ describe DataImport::Importer do
   let(:definition) { DataImport::Definition::Simple.new 'A', source, target }
   let(:context) { stub }
   let(:progress_reporter) { stub }
-  let(:execution_options) { stub }
   before { context.stub(:definition).with('C').and_return(other_definition) }
   subject { DataImport::Importer.new(context, definition, progress_reporter) }
 
   describe "#run" do
-    let(:source_table_name) { 'legacy_slugs' }
-    before { definition.stub(:execution_options => execution_options) }
-    before { definition.source_table_name = source_table_name }
-    it "runs the import in a transaction" do
-      definition.target_database.should_receive(:transaction)
-      subject.run
-    end
+    let(:source_dataset) { mock }
+    before { definition.stub(:source_dataset => source_dataset) }
 
     it "call #import_row for each row" do
-      definition.target_database.stub(:transaction).and_yield
-      definition.source_database.stub(:each_row).
-        with(source_table_name, execution_options).
+      definition.source_dataset.should_receive(:each_row).
         and_yield(:a => :b).
         and_yield(:c => :d)
 
@@ -36,8 +28,7 @@ describe DataImport::Importer do
 
     context 'after blocks' do
       before do
-        definition.target_database.stub(:transaction).and_yield
-        definition.source_database.stub(:each_row)
+        definition.source_dataset.stub(:each_row)
       end
 
       it "run after the data import" do
@@ -118,7 +109,6 @@ describe DataImport::Importer do
 
     it "adds the generated id to the id mapping of the definition" do
       definition.target_database.stub(:insert_row).and_return { 15 }
-      definition.stub(:source_primary_key).and_return { :id }
       definition.should_receive(:row_imported).with(15, {:id => 1})
       subject.send(:import_row, :id => 1)
     end

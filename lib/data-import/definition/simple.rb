@@ -4,9 +4,8 @@ module DataImport
 
       include Lookup
 
-      attr_reader :source_primary_key
-      attr_accessor :source_table_name, :source_columns, :source_distinct_columns, :source_order_columns
       attr_accessor :target_table_name
+      attr_accessor :source_dataset, :target_dataset
       attr_accessor :after_blocks, :after_row_blocks
       attr_reader :mode
 
@@ -16,8 +15,6 @@ module DataImport
         @mode = :insert
         @after_blocks = []
         @after_row_blocks = []
-        @source_columns = []
-        @source_order_columns = []
       end
 
       def mappings
@@ -41,18 +38,8 @@ module DataImport
       end
 
       def total_steps_required
-        source_database.count(source_table_name, count_options)
+        source_dataset.count
       end
-
-      def execution_options
-        count_options.merge(:primary_key => source_primary_key,
-                            :order => source_order_columns)
-      end
-
-      def count_options
-        {:columns => source_columns, :distinct => source_distinct_columns}
-      end
-      private :count_options
 
       class NameMapping
         def initialize(from, to)

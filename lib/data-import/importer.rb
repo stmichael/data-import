@@ -8,11 +8,9 @@ module DataImport
     end
 
     def run
-      @definition.target_database.transaction do
-        @definition.source_database.each_row(@definition.source_table_name, @definition.execution_options) do |row|
-          import_row row
-          @progress_reporter.inc
-        end
+      @definition.source_dataset.each_row do |row|
+        import_row row
+        @progress_reporter.inc
       end
       @definition.after_blocks.each do |block|
         @definition.instance_exec(@context, &block)

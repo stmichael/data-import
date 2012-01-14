@@ -7,11 +7,13 @@ module DataImport
         @definition = definition
       end
 
-      def from(name = nil, options = {}, &block)
-        definition.source_table_name = name
-        definition.source_primary_key = options[:primary_key]
-
-        From.new(definition).instance_eval &block if block_given?
+      def from(table_name = nil, options = {}, &block)
+        dataset = if block_given?
+                    DataImport::Sequel::Dataset.new(definition.source_database, block)
+                  else
+                    DataImport::Sequel::Table.new(definition.source_database, table_name, &block)
+                  end
+        definition.source_dataset = dataset
       end
 
       def to(name, options = {})

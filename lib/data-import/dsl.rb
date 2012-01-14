@@ -1,5 +1,4 @@
 require 'data-import/dsl/import'
-require 'data-import/dsl/import/from'
 
 module DataImport
   class Dsl

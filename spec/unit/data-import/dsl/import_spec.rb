@@ -2,24 +2,33 @@ require 'unit/spec_helper'
 
 describe DataImport::Dsl::Import do
 
-  let(:definition) { DataImport::Definition::Simple.new('d', :source, :target) }
+  let(:source) { stub }
+  let(:target) { stub }
+
+  let(:definition) { DataImport::Definition::Simple.new('d', source, target) }
   subject { DataImport::Dsl::Import.new(definition) }
 
   describe "#from" do
-    it "saves the source table name to the definition" do
-      subject.from 'source_table'
-      definition.source_table_name.should == 'source_table'
+    context 'when a table-name is passed' do
+      it "assigns the source dataset to the definition" do
+        dataset = stub
+        DataImport::Sequel::Table.should_receive(:new).with(source, 'tblConversions').and_return(dataset)
+
+        subject.from 'tblConversions'
+        definition.source_dataset.should == dataset
+      end
     end
 
-    it "saves the primary key" do
-      subject.from 'source_table', :primary_key => 'my_key'
-      definition.source_primary_key.should == :my_key
-    end
+    context 'when a block is passed' do
+      it 'uses the block to build the base query' do
+        custom_dataset = lambda { |db| }
 
-    let(:block) { lambda{} }
-    it "executes the passed block" do
-      DataImport::Dsl::Import::From.any_instance.should_receive(:instance_eval).with(&block)
-      subject.from &block
+        dataset = stub
+        DataImport::Sequel::Dataset.should_receive(:new).with(source, custom_dataset).and_return(dataset)
+
+        subject.from &custom_dataset
+        definition.source_dataset.should == dataset
+      end
     end
   end
 
