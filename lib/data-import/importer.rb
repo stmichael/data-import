@@ -19,23 +19,20 @@ module DataImport
       end
     end
 
-    def import_row(row)
+    def map_row(row)
       mapped_row = {}
-      @definition.mappings.each do |old_key, new_key|
-        if new_key.respond_to?(:call)
-          keys = Array(old_key)
-          params = [@context] + keys.map{|key| row[key.to_sym]}
-          mapped_values = @definition.instance_exec(*params, &new_key)
-          mapped_row.merge! mapped_values if mapped_values.present?
-        else
-          mapped_row[new_key] = row[old_key.to_sym]
-        end
+      @definition.mappings.each do |mapping|
+        mapped_row.merge!(mapping.apply(@definition, @context, row))
       end
+      mapped_row
+    end
 
+    def import_row(row)
+      mapped_row = map_row(row)
       case @definition.mode
       when :insert
         new_id = @definition.target_database.insert_row @definition.target_table_name, mapped_row
-        @definition.add_mappings(new_id, row)
+        @definition.row_imported(new_id, row)
       when :update
         @definition.target_database.update_row(@definition.target_table_name, mapped_row)
       end

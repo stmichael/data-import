@@ -20,13 +20,14 @@ module DataImport
       end
 
       def mapping(*hash_or_symbols, &block)
-        if hash_or_symbols.first.is_a? Hash
-          definition.mappings.merge! hash_or_symbols.first
-        else
-          symbols = hash_or_symbols
-          symbols = symbols.first if symbols.count == 1
-          definition.mappings[symbols] = block
-        end
+        mapping = if hash_or_symbols.first.is_a? Hash
+                    mapping_attributes = hash_or_symbols.first
+                    Definition::Simple::NameMapping.new(mapping_attributes.keys.first,
+                                                        mapping_attributes.values.first)
+                  else
+                    Definition::Simple::BlockMapping.new(hash_or_symbols, block)
+                  end
+        definition.add_mapping(mapping)
       end
 
       def after(&block)

@@ -12,6 +12,7 @@ module DataImport
 
       def initialize(name, source_database, target_database)
         super
+        @mappings = []
         @mode = :insert
         @after_blocks = []
         @after_row_blocks = []
@@ -20,7 +21,11 @@ module DataImport
       end
 
       def mappings
-        @mappings ||= {}
+        @mappings.to_enum
+      end
+
+      def add_mapping(mapping)
+        @mappings << mapping
       end
 
       def source_primary_key=(value)
@@ -48,6 +53,33 @@ module DataImport
         {:columns => source_columns, :distinct => source_distinct_columns}
       end
       private :count_options
+
+      class NameMapping
+        def initialize(from, to)
+          @from = from.to_sym
+          @to = to.to_sym
+        end
+
+        def apply(_definition, _context, row)
+          if row.has_key?(@from)
+            { @to => row[@from]}
+          else
+            {}
+          end
+        end
+      end
+
+      class BlockMapping
+        def initialize(columns, block)
+          @columns = Array(columns).map(&:to_sym)
+          @block = block
+        end
+
+        def apply(definition, context, row)
+          arguments = [context] + @columns.map {|column| row[column] }
+          definition.instance_exec(*arguments, &@block)
+        end
+      end
 
     end
   end

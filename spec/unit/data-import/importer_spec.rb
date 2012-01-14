@@ -81,7 +81,8 @@ describe DataImport::Importer do
         output_rows << output_row
       end
 
-      definition.stub(:mappings).and_return { {:id => :new_id} }
+      subject.should_receive(:map_row).with({:id => 1}).and_return({:new_id => 1})
+      subject.should_receive(:map_row).with({:id => 2}).and_return({:new_id => 2})
       definition.target_database.should_receive(:insert_row).any_number_of_times
       subject.send(:import_row, :id => 1)
       subject.send(:import_row, :id => 2)
@@ -91,54 +92,41 @@ describe DataImport::Importer do
     end
   end
 
+  describe "#map_row" do
+    let(:id_mapping) { mock }
+    let(:name_mapping) { mock }
+    let(:mappings) { [id_mapping, name_mapping] }
+    let(:definition) { stub(:mappings => mappings) }
+    let(:context) { stub() }
+
+    subject { DataImport::Importer.new(context, definition, nil) }
+
+    it 'calls apply for all mappings' do
+      legacy_row = {:legacy_id => 1, :legacy_name => 'hans'}
+      id_mapping.should_receive(:apply).with(definition, context, legacy_row).and_return(:id => 2)
+      name_mapping.should_receive(:apply).with(definition, context, legacy_row).and_return(:name => 'peter')
+      subject.map_row(legacy_row).should == {:id => 2, :name => 'peter'}
+    end
+  end
+
   describe "#import_row" do
     it "executes the insertion" do
-      definition.stub(:mappings).and_return { {:id => :id} }
-      definition.stub(:target_table_name).and_return { :table }
-      definition.target_database.should_receive(:insert_row).with(:table, :id => 1)
-      subject.send(:import_row, :id => 1)
-    end
-
-    it "replaces the keys that occur in the field mapping" do
-      definition.stub(:mappings).and_return { {:personenid => :id} }
-      definition.stub(:target_table_name).and_return { :table }
-      definition.target_database.should_receive(:insert_row).with(:table, :id => 1)
-      subject.send(:import_row, :personenid => 1)
-    end
-
-    it "calls the proc if one is specified in the field mapping" do
-      definition.stub(:mappings).and_return { {:personenid => lambda{|context, value| {:id => 2}}} }
-      definition.stub(:target_table_name).and_return { :table }
-      definition.target_database.should_receive(:insert_row).with(:table, :id => 2)
-      subject.send(:import_row, :personenid => 1)
-    end
-
-    it "ignores the return value of the proc when it is nil" do
-      definition.stub(:mappings).and_return { {:personenid => lambda{|context, value| nil }} }
       definition.stub(:target_table_name).and_return { :table }
       definition.target_database.should_receive(:insert_row).with(:table, {})
-      subject.send(:import_row, :personenid => 1)
-    end
-
-    it "calls the proc for multiple columns" do
-      definition.stub(:mappings).and_return { {[:a, :b] => lambda{|context, a_value, b_value| {:id => 2}}} }
-      definition.stub(:target_table_name).and_return { :table }
-      definition.target_database.should_receive(:insert_row).with(:table, :id => 2)
-      subject.send(:import_row, :a => 4, :b => 9)
+      subject.send(:import_row, :id => 1)
     end
 
     it "adds the generated id to the id mapping of the definition" do
       definition.target_database.stub(:insert_row).and_return { 15 }
       definition.stub(:source_primary_key).and_return { :id }
-      definition.should_receive(:add_mappings).with(15, {:id => 1})
+      definition.should_receive(:row_imported).with(15, {:id => 1})
       subject.send(:import_row, :id => 1)
     end
 
     it 'calls update_row for definitions with a mode uf :update' do
-      definition.stub(:mappings).and_return { {:id => :id} }
       definition.target_table_name = 'target_table'
       definition.use_mode(:update)
-      definition.target_database.should_receive(:update_row).with('target_table', {:id => 1})
+      definition.target_database.should_receive(:update_row).with('target_table', {})
 
       subject.send(:import_row, :id => 1)
     end
