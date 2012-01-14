@@ -1,8 +1,5 @@
 module DataImport
   class ExecutionPlan
-
-    attr_accessor :before_filter
-
     def initialize(definitions = [])
       @definitions = Hash[definitions.map do |definition|
                             [definition.name, definition]

@@ -29,7 +29,6 @@ describe DataImport::DependencyResolver do
 
     resolved_plan = mock
     DataImport::ExecutionPlan.should_receive(:new).with([a, b]).and_return(resolved_plan)
-    resolved_plan.should_receive(:before_filter=)
     subject.resolve.should == resolved_plan
   end
 

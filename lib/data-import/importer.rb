@@ -10,7 +10,6 @@ module DataImport
     def run
       @definition.target_database.transaction do
         @definition.source_database.each_row(@definition.source_table_name, @definition.execution_options) do |row|
-          @context.before_filter.call(row) if @context.before_filter
           import_row row
           @progress_reporter.inc
         end

@@ -11,12 +11,6 @@ describe DataImport::ExecutionPlan do
     plan.definitions.should == definitions
   end
 
-  it 'can contain a before_filter' do
-    my_filter = lambda {}
-    subject.before_filter = my_filter
-    subject.before_filter.should == my_filter
-  end
-
   it 'raises an error when a non-existing definition is fetched' do
     lambda do
       subject.definition('I-do-not-exist')

@@ -6,7 +6,7 @@ describe DataImport::Importer do
   let(:target) { stub }
   let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target }
   let(:definition) { DataImport::Definition::Simple.new 'A', source, target }
-  let(:context) { stub(:before_filter => nil) }
+  let(:context) { stub }
   let(:progress_reporter) { stub }
   let(:execution_options) { stub }
   before { context.stub(:definition).with('C').and_return(other_definition) }
@@ -31,21 +31,6 @@ describe DataImport::Importer do
       subject.should_receive(:import_row).with(:a => :b)
       subject.should_receive(:import_row).with(:c => :d)
       progress_reporter.should_receive(:inc).twice
-      subject.run
-    end
-
-    it 'uses the before_filter to modify the row before importing it' do
-      context.stub(:before_filter => lambda do |row|
-                     row['a'] = row['a'].upcase
-                   end)
-      progress_reporter.stub(:inc)
-      definition.target_database.stub(:transaction).and_yield
-      definition.source_database.should_receive(:each_row).
-        with(source_table_name, execution_options).
-        and_yield('a' => 'b').and_yield('a' => 'c')
-
-      subject.should_receive(:import_row).with('a' => 'B')
-      subject.should_receive(:import_row).with('a' => 'C')
       subject.run
     end
 

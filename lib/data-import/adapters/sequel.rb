@@ -6,6 +6,7 @@ module DataImport
     class Sequel
 
       attr_reader :db
+      attr_accessor :before_filter
 
       def self.connect(options = {})
         ::Sequel.identifier_output_method = :to_s
@@ -40,6 +41,7 @@ module DataImport
         sql = sql.distinct if options[:distinct]
         sql = sql.order(*options[:order]) unless options[:order].nil?
         sql.each do |row|
+          before_filter.call(row) if before_filter
           yield row if block_given?
         end
       end
@@ -56,6 +58,7 @@ module DataImport
           sql = sql.distinct if options[:distinct]
           sql = sql.order(*options[:order]) unless options[:order].nil?
           sql.each do |result|
+            before_filter.call(result) if before_filter
             yield result if block_given?
           end unless sql.nil?
           lower_bound += batch_size

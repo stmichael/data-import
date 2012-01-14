@@ -37,6 +37,16 @@ describe DataImport::Dsl do
         subject.source :options
         subject.source_database.should == source
       end
+
+      it 'adds the before block to source database when specified' do
+        my_filter = lambda {}
+        DataImport::Database.stub(:connect).and_return { source }
+        source.should_receive(:before_filter=).with(my_filter)
+        plan = DataImport::Dsl.define do
+          source 'sqlite:/'
+          before_filter &my_filter
+        end
+      end
     end
 
     describe "#target" do
@@ -82,16 +92,6 @@ describe DataImport::Dsl do
 
         import_dsl.should_receive(:instance_eval).with(&my_block)
         subject.import 'name', &my_block
-      end
-    end
-
-    describe "#before_block" do
-      it 'adds the before block to the execution plan' do
-        my_filter = lambda {}
-        plan = DataImport::Dsl.define do
-          before_filter &my_filter
-        end
-        plan.before_filter.should == my_filter
       end
     end
   end

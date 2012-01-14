@@ -9,10 +9,8 @@ module DataImport
     def resolve(options = {})
       resolved_dependencies = @strategy.new(dependency_graph).call(options)
       resolved_dependencies = resolved_dependencies.map {|definition| @plan.definition(definition) }
-      # TODO: Better way to deal with the ExecutionPlan copy
-      plan = ExecutionPlan.new(resolved_dependencies)
-      plan.before_filter = @plan.before_filter
-      plan
+
+      ExecutionPlan.new(resolved_dependencies)
     end
 
     def dependency_graph
