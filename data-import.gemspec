@@ -23,6 +23,11 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rspec"
   s.add_development_dependency "sqlite3"
 
+  s.add_development_dependency "flay"
+  s.add_development_dependency "flog"
+  s.add_development_dependency "reek"
+  s.add_development_dependency "roodi"
+
   s.add_runtime_dependency "sequel"
   s.add_runtime_dependency "progressbar"
   s.add_runtime_dependency "activesupport", '>= 3.1.1'
