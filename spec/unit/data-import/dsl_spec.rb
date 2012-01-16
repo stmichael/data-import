@@ -68,7 +68,7 @@ describe DataImport::Dsl do
         definition = stub
         DataImport::Definition::Simple.should_receive(:new).with('Import 5', nil, nil).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
-        subject.import 'Import 5'
+        subject.import('Import 5') {}
       end
 
       it "sets the source and target database in the definition" do
@@ -79,7 +79,7 @@ describe DataImport::Dsl do
         DataImport::Definition::Simple.should_receive(:new).with('a', :source, :target).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
 
-        subject.import 'a'
+        subject.import('a') {}
       end
 
       it "executes the block in an import conext" do

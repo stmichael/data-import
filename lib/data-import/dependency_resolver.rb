@@ -56,13 +56,13 @@ module DataImport
       private :direct_dependencies
 
       def recursive_dependencies(name, visited_definitions = [])
-        indirect_dependencies = direct_dependencies(name).map do |dep|
+        direct_dependencies(name).map do |dep|
           raise CircularDependencyError.new(name, dep) if visited_definitions.include?(dep)
           recursive_dependencies(dep, visited_definitions + [name])
-        end.flatten
-        indirect_dependencies + direct_dependencies(name)
+        end.flatten + direct_dependencies(name)
       end
       private :recursive_dependencies
+
     end
   end
 end

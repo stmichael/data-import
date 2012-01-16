@@ -43,7 +43,7 @@ module DataImport
       definition = DataImport::Definition::Simple.new(name, source_database, target_database)
       @plan.add_definition(definition)
 
-      Import.new(definition).instance_eval &block if block_given?
+      Import.new(definition).instance_eval &block
     end
 
     def before_filter(&block)

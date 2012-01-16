@@ -77,6 +77,20 @@ describe DataImport::DependencyResolver, 'algorythm' do
     end
   end
 
+  context 'with growing dependencies' do
+    let(:graph) {
+      { 'A' => [],
+        'B' => [],
+        'A1' => ['A', 'B'],
+        'A11' => ['A1']
+      }
+    }
+
+    it 'runs only necessary definitions when :run_only is passed' do
+      subject.call(:run_only => ['A11']).should == ['A', 'B', 'A1', 'A11']
+    end
+  end
+
   context 'with circular dependencies' do
     let(:graph) {
       { 'A' => ['B'],
