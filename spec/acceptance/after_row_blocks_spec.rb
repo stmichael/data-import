@@ -1,4 +1,4 @@
-require 'integration/spec_helper'
+require 'acceptance/spec_helper'
 
 describe 'execute code after each row' do
 

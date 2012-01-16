@@ -1,4 +1,4 @@
-require 'integration/spec_helper'
+require 'acceptance/spec_helper'
 
 describe 'definition dependencies' do
 
@@ -69,4 +69,70 @@ describe 'definition dependencies' do
     target_database[:wheels].count.should == 1
   end
 
+  describe "circular dependencies" do
+    in_memory_mapping do
+      import 'Cats' do
+        dependencies 'Cats'
+      end
+
+      import 'People' do
+        dependencies 'Cats'
+      end
+    end
+
+    it 'recognizes circular dependencies' do
+      lambda do
+        DataImport.run_plan!(plan)
+      end.should raise_error(DataImport::CircularDependencyError)
+    end
+  end
+
+  describe "missing dependencies" do
+    in_memory_mapping do
+      import 'Dogs' do
+        dependencies 'Non-Existing-Owners'
+      end
+    end
+
+    it 'recognizes missing dependencies' do
+      lambda do
+        DataImport.run_plan!(plan)
+      end.should raise_error(DataImport::MissingDefinitionError)
+    end
+  end
+
+  describe "unloaded dependencies" do
+    in_memory_mapping do
+      import 'Cats' do
+        from 'LegacyCats', :primary_key => 'ID'
+        to 'cats'
+
+        mapping 'sOwnerID' do |context, value|
+          context.definition('Owners')
+          {}
+        end
+      end
+
+      import 'Owners' do
+      end
+    end
+
+    database_setup do
+      source.create_table :LegacyCats do
+        primary_key :ID
+        Integer :sOwnerID
+      end
+      target.create_table :cats do
+        primary_key :id
+      end
+
+      source[:LegacyCats].insert(:ID => 1, :sOwnerID => 1)
+    end
+
+    it 'recognizes unloaded dependencies' do
+      lambda do
+        DataImport.run_plan!(plan, :only => ['Cats'])
+      end.should raise_error(DataImport::MissingDefinitionError)
+    end
+  end
 end

@@ -2,36 +2,49 @@ require 'unit/spec_helper'
 
 describe DataImport::Dsl::Import do
 
-  let(:definition) { DataImport::Definition::Simple.new('d', :source, :target) }
+  let(:source) { stub }
+  let(:target) { stub }
+
+  let(:definition) { DataImport::Definition::Simple.new('d', source, target) }
   subject { DataImport::Dsl::Import.new(definition) }
 
   describe "#from" do
-    it "saves the source table name to the definition" do
-      subject.from 'source_table'
-      definition.source_table_name.should == 'source_table'
+    context 'when a table-name is passed' do
+      it "assigns the source dataset to the definition" do
+        reader = stub
+        DataImport::Sequel::Table.should_receive(:new).with(source, 'tblConversions').and_return(reader)
+
+        subject.from 'tblConversions'
+        definition.reader.should == reader
+      end
     end
 
-    it "saves the primary key" do
-      subject.from 'source_table', :primary_key => 'my_key'
-      definition.source_primary_key.should == :my_key
-    end
+    context 'when a block is passed' do
+      it 'uses the block to build the base query' do
+        custom_dataset = lambda { |db| }
 
-    let(:block) { lambda{} }
-    it "executes the passed block" do
-      DataImport::Dsl::Import::From.any_instance.should_receive(:instance_eval).with(&block)
-      subject.from &block
+        reader = stub
+        DataImport::Sequel::Dataset.should_receive(:new).with(source, custom_dataset).and_return(reader)
+
+        subject.from &custom_dataset
+        definition.reader.should == reader
+      end
     end
   end
 
   describe "#to" do
-    it "saves the target table name to the definition" do
-      subject.to 'target_table'
-      definition.target_table_name.should == 'target_table'
+    it "assigns a table-writer for the given table to the definition" do
+      writer = stub
+      DataImport::Sequel::InsertWriter.should_receive(:new).with(target, 'tblChickens').and_return(writer)
+      subject.to 'tblChickens'
+      definition.writer.should == writer
     end
 
-    it 'accepts a :mode option' do
-      subject.to 'target_table', :mode => :update
-      definition.mode.should == :update
+    it 'uses an UpdateWriter when the :mode is set to :update' do
+      writer = stub
+      DataImport::Sequel::UpdateWriter.should_receive(:new).with(target, 'tblFoxes').and_return(writer)
+      subject.to 'tblFoxes', :mode => :update
+      definition.writer.should == writer
     end
   end
 
@@ -51,22 +64,28 @@ describe DataImport::Dsl::Import do
 
   describe "#mapping" do
     it "adds a column mapping to the definition" do
+      name_mapping = stub
+      DataImport::Definition::Simple::NameMapping.should_receive(:new).with(:a, :b).and_return(name_mapping)
+      definition.should_receive(:add_mapping).with(name_mapping)
+
       subject.mapping :a => :b
-      definition.mappings.should include(:a)
-      definition.mappings[:a].should == :b
     end
 
     let(:block) { lambda{|value|} }
     it "adds a proc to the mappings" do
+      block_mapping = stub
+      DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a], block).and_return(block_mapping)
+      definition.should_receive(:add_mapping).with(block_mapping)
+
       subject.mapping :a, &block
-      definition.mappings.should include(:a)
-      definition.mappings[:a].should == block
     end
 
     it "adds a proc with multiple fields to the mappings" do
+      block_mapping = stub
+      DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a, :b], block).and_return(block_mapping)
+      definition.should_receive(:add_mapping).with(block_mapping)
+
       subject.mapping :a, :b, &block
-      definition.mappings.should include([:a, :b])
-      definition.mappings[[:a, :b]].should == block
     end
   end
 

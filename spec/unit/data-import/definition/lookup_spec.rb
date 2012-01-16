@@ -66,7 +66,7 @@ describe DataImport::Definition::Lookup do
 
     it 'does not add any mappings when no lookup-attributes are given' do
       lambda do
-        subject.add_mappings(66, :undefined_attribute => 'value-to-lookup')
+        subject.row_imported(66, :undefined_attribute => 'value-to-lookup')
       end.should_not raise_error
     end
 
@@ -74,7 +74,7 @@ describe DataImport::Definition::Lookup do
       id = 17
       lookup_value = 'value-to-lookup'
 
-      subject.add_mappings(id, :code => lookup_value)
+      subject.row_imported(id, :code => lookup_value)
 
       subject.identify_by(:code, lookup_value).should == id
     end
@@ -84,7 +84,7 @@ describe DataImport::Definition::Lookup do
       ref = 'i-am-a-reference'
       subject.lookup_for :reference, :column => 'strRef'
 
-      subject.add_mappings(id, :strRef => ref)
+      subject.row_imported(id, :strRef => ref)
 
       subject.identify_by(:reference, ref).should == id
     end
@@ -97,7 +97,7 @@ describe DataImport::Definition::Lookup do
 
     it 'do not add nil value mappings' do
       do_not_map_this_id = 6
-      subject.add_mappings(do_not_map_this_id, :code => nil)
+      subject.row_imported(do_not_map_this_id, :code => nil)
 
       subject.identify_by(:code, nil).should == nil
     end

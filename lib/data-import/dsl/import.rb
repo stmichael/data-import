@@ -7,26 +7,31 @@ module DataImport
         @definition = definition
       end
 
-      def from(name = nil, options = {}, &block)
-        definition.source_table_name = name
-        definition.source_primary_key = options[:primary_key]
-
-        From.new(definition).instance_eval &block if block_given?
+      def from(table_name = nil, options = {}, &block)
+        reader = if block_given?
+                    DataImport::Sequel::Dataset.new(definition.source_database, block)
+                  else
+                    DataImport::Sequel::Table.new(definition.source_database, table_name, &block)
+                  end
+        definition.reader = reader
       end
 
-      def to(name, options = {})
-        definition.target_table_name = name
-        definition.use_mode(:update) if options[:mode] == :update
+      def to(table_name, options = {})
+        writer = if options[:mode] == :update
+                   DataImport::Sequel::UpdateWriter.new(definition.target_database, table_name)
+                 else
+                   DataImport::Sequel::InsertWriter.new(definition.target_database, table_name)
+                 end
+        definition.writer = writer
       end
 
       def mapping(*hash_or_symbols, &block)
-        if hash_or_symbols.first.is_a? Hash
-          definition.mappings.merge! hash_or_symbols.first
-        else
-          symbols = hash_or_symbols
-          symbols = symbols.first if symbols.count == 1
-          definition.mappings[symbols] = block
-        end
+        mapping = if hash_or_symbols.first.is_a? Hash
+                    Definition::Simple::NameMapping.new(*hash_or_symbols.first.flatten)
+                  else
+                    Definition::Simple::BlockMapping.new(hash_or_symbols, block)
+                  end
+        definition.add_mapping(mapping)
       end
 
       def after(&block)
