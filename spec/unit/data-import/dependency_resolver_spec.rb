@@ -2,81 +2,118 @@ require 'unit/spec_helper'
 
 describe DataImport::DependencyResolver do
 
-  it 'can limit the definitions which should run' do
-    a = DataImport::Definition.new 'A', :source, :target
-    b = DataImport::Definition.new 'B', :source, :target
-    c = DataImport::Definition.new 'C', :source, :target
+  let(:strategy_class) { mock }
+  let(:strategy) { mock }
+  let(:a) { stub('A', :name => 'A', :dependencies => []) }
+  let(:b) { stub('B', :name => 'B', :dependencies => ['A']) }
+  let(:c) { stub('C', :name => 'C', :dependencies => ['A', 'B']) }
+  let(:plan) { DataImport::ExecutionPlan.new([a, b, c]) }
+  subject { DataImport::DependencyResolver.new(plan, strategy) }
 
-    resolver = DataImport::DependencyResolver.new([a, b, c])
-    resolver.resolve(['A', 'C']).map(&:name).should == ['A', 'C']
+  let(:graph) {
+    graph = {
+      'A' => [],
+      'B' => ['A'],
+      'C' => ['A', 'B']
+    }
+  }
+
+  before do
+    strategy.stub(:call => ['A', 'B'])
+    strategy.should_receive(:new).with(graph).and_return(strategy)
   end
 
-  it 'executes leaf-definitions first and works to the top' do
-    a = DataImport::Definition.new 'A', :source, :target
-    b = DataImport::Definition.new 'B', :source, :target
+  it 'should return an ExecutionPlan' do
+    # Create the input plan before the mocks are setup
+    plan
 
-    a_1 = DataImport::Definition.new 'A1', :source, :target
-    a_1.add_dependency('A')
-
-    ab_1 = DataImport::Definition.new 'A-B-1', :source, :target
-    ab_1.add_dependency('A')
-    ab_1.add_dependency('B')
-
-    ab_a1_1 = DataImport::Definition.new 'AB-A1-1', :source, :target
-    ab_a1_1.add_dependency('A-B-1')
-    ab_a1_1.add_dependency('A1')
-
-    resolver = DataImport::DependencyResolver.new([ab_a1_1, ab_1, b, a, a_1])
-
-    resolver.resolve.map(&:name).should == ['A', 'B', 'A-B-1', 'A1', 'AB-A1-1']
+    resolved_plan = mock
+    DataImport::ExecutionPlan.should_receive(:new).with([a, b]).and_return(resolved_plan)
+    subject.resolve.should == resolved_plan
   end
 
-  it 'handles dependencies correctly when :only is present' do
-    a = DataImport::Definition.new 'A', :source, :target
-    ab = DataImport::Definition.new 'AB', :source, :target
-    ab.add_dependency('A')
-    abc = DataImport::Definition.new 'ABC', :source, :target
-    abc.add_dependency('AB')
+  it 'passes the options to the resolving strategy' do
+    options = {:run_only => ['A', 'B']}
+    strategy.should_receive(:call).with(options)
 
-    resolver = DataImport::DependencyResolver.new([abc, a, ab])
-
-    resolver.resolve(['ABC']).map(&:name).should == ['A', 'AB', 'ABC']
+    subject.resolve(options)
   end
 
-  it "raises an exception when the dependencies can't be resolved" do
-    a = DataImport::Definition.new 'A', :source, :target
-    b = DataImport::Definition.new 'B', :source, :target
-    a.add_dependency('B')
-    b.add_dependency('A')
+end
 
-    resolver = DataImport::DependencyResolver.new([a, b])
+describe DataImport::DependencyResolver, 'algorythm' do
 
-    lambda do
-      resolver.resolve
-    end.should raise_error(RuntimeError, "ciruclar dependencies: 'B' <-> 'A'")
+  subject { DataImport::DependencyResolver::LoopStrategy.new(graph) }
+
+  context 'without dependencies' do
+    let(:graph) {
+      { 'A' => [],
+        'B' => [],
+        'C' => []
+      }
+    }
+
+    it 'can limit the definitions which should run' do
+      subject.call(:run_only => ['A', 'C']).should == ['A', 'C']
+    end
   end
 
-  it 'raises an error when invalid dependencies are found' do
-    a = DataImport::Definition.new 'A', :source, :target
-    a.add_dependency('NOT_PRESENT')
+  context 'with nested dependencies' do
+    let(:graph) {
+      { 'A' => [],
+        'B' => [],
+        'A1' => ['A'],
+        'A-B-1' => ['A', 'B'],
+        'AB-A1-1' => ['A-B-1', 'A1']
+      }
+    }
 
-    resolver = DataImport::DependencyResolver.new([a])
+    it 'executes leaf-definitions first and works to the top' do
+      subject.call.should == ['A', 'B', 'A1', 'A-B-1', 'AB-A1-1']
+    end
 
-    lambda do
-      resolver.resolve
-    end.should raise_error(RuntimeError, "no definition found for 'NOT_PRESENT'")
+    it 'runs only necessary definitions when :run_only is passed' do
+      subject.call(:run_only => ['A1', 'B']).should == ['A', 'B', 'A1']
+    end
   end
 
-  it 'can resolve dependencies which appear to be circular but are not' do
-    a = DataImport::Definition.new 'A', :source, :target
-    ab = DataImport::Definition.new 'AB', :source, :target
-    ab.add_dependency('A')
-    aba = DataImport::Definition.new 'AB-A', :source, :target
-    aba.add_dependency('AB')
-    aba.add_dependency('A')
+  context 'with circular dependencies' do
+    let(:graph) {
+      { 'A' => ['B'],
+        'B' => ['A']
+      }
+    }
 
-    resolver = DataImport::DependencyResolver.new([a, aba, ab])
+    it "can't resolve them and raises an exception" do
+      lambda do
+        subject.call
+      end.should raise_error(DataImport::CircularDependencyError)
+    end
+  end
 
-    resolver.resolve.map(&:name).should == ['A', 'AB', 'AB-A']
+  context 'with non-exisitng dependencies' do
+    let(:graph) {
+      { 'A' => ['NOT_PRESENT'] }
+    }
+
+    it 'raises an error' do
+      lambda do
+        subject.call
+      end.should raise_error(DataImport::MissingDefinitionError)
+    end
+
+  end
+
+  context 'with dependencies that appear to be circular but are not' do
+    let(:graph) {
+      { 'A' => [],
+        'AB' => ['A'],
+        'AB-A' => ['AB', 'A']
+      }
+    }
+
+    it 'resolves them' do
+      subject.call == ['A', 'AB', 'AB-A']
+    end
   end
 end

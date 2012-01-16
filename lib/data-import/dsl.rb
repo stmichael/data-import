@@ -1,5 +1,4 @@
 require 'data-import/dsl/import'
-require 'data-import/dsl/import/from'
 
 module DataImport
   class Dsl
@@ -48,7 +47,7 @@ module DataImport
     end
 
     def before_filter(&block)
-      @plan.before_filter = block
+      @source_database.before_filter = block
     end
   end
 end

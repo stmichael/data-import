@@ -18,10 +18,10 @@ module DataImport
         end
       end
 
-      def add_mappings(id, row)
+      def row_imported(id, row)
         row.each do |attribute, value|
           if has_lookup_table_on?(attribute)
-            add_mapping(attribute, value, id)
+            add_lookup_value(attribute, value, id)
           end
         end
       end
@@ -42,12 +42,12 @@ module DataImport
         @lookup_tables.has_key?(name.to_sym)
       end
 
-      def add_mapping(attribute, value, id)
+      def add_lookup_value(attribute, value, id)
         return if value.blank?
         name = config_for(attribute).name
         lookup_table_named(name)[value] = id
       end
-      private :add_mapping
+      private :add_lookup_value
 
       def config_for(attribute)
         @lookup_table_configurations[attribute]

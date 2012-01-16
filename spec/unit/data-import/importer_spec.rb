@@ -6,20 +6,19 @@ describe DataImport::Importer do
   let(:target) { stub }
   let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target }
   let(:definition) { DataImport::Definition::Simple.new 'A', source, target }
-  let(:context) { stub(:before_filter => nil) }
+  let(:context) { stub }
   let(:progress_reporter) { stub }
   before { context.stub(:definition).with('C').and_return(other_definition) }
   subject { DataImport::Importer.new(context, definition, progress_reporter) }
 
   describe "#run" do
-    it "runs the import in a transaction" do
-      definition.target_database.should_receive(:transaction)
-      subject.run
-    end
+    let(:reader) { mock }
+    before { definition.stub(:reader => reader) }
 
     it "call #import_row for each row" do
-      definition.target_database.stub(:transaction).and_yield
-      definition.source_database.stub(:each_row).and_yield(:a => :b).and_yield(:c => :d)
+      definition.reader.should_receive(:each_row).
+        and_yield(:a => :b).
+        and_yield(:c => :d)
 
       subject.should_receive(:import_row).with(:a => :b)
       subject.should_receive(:import_row).with(:c => :d)
@@ -27,23 +26,9 @@ describe DataImport::Importer do
       subject.run
     end
 
-    it 'uses the before_filter to modify the row before importing it' do
-      context.stub(:before_filter => lambda do |row|
-                     row['a'] = row['a'].upcase
-                   end)
-      progress_reporter.stub(:inc)
-      definition.target_database.stub(:transaction).and_yield
-      definition.source_database.stub(:each_row).and_yield('a' => 'b').and_yield('a' => 'c')
-
-      subject.should_receive(:import_row).with('a' => 'B')
-      subject.should_receive(:import_row).with('a' => 'C')
-      subject.run
-    end
-
     context 'after blocks' do
       before do
-        definition.target_database.stub(:transaction).and_yield
-        definition.source_database.stub(:each_row)
+        definition.reader.stub(:each_row)
       end
 
       it "run after the data import" do
@@ -79,6 +64,8 @@ describe DataImport::Importer do
   end
 
   context 'after row blocks' do
+    let(:writer) { mock }
+    before { definition.writer = writer }
     it "run after the data import" do
       input_rows = []
       output_rows = []
@@ -87,66 +74,54 @@ describe DataImport::Importer do
         output_rows << output_row
       end
 
-      definition.stub(:mappings).and_return { {:id => :new_id} }
-      definition.target_database.should_receive(:insert_row).any_number_of_times
-      subject.send(:import_row, :id => 1)
-      subject.send(:import_row, :id => 2)
+      subject.should_receive(:map_row).with({:id => 1}).and_return({:new_id => 1})
+      subject.should_receive(:map_row).with({:id => 2}).and_return({:new_id => 2})
+      writer.should_receive(:write_row).any_number_of_times
+      subject.import_row(:id => 1)
+      subject.import_row(:id => 2)
 
       input_rows.should == [{:id => 1}, {:id => 2}]
       output_rows.should == [{:new_id => 1}, {:new_id => 2}]
     end
   end
 
-  describe "#import_row" do
-    it "executes the insertion" do
-      definition.stub(:mappings).and_return { {:id => :id} }
-      definition.stub(:target_table_name).and_return { :table }
-      definition.target_database.should_receive(:insert_row).with(:table, :id => 1)
-      subject.send(:import_row, :id => 1)
+  context do
+    let(:id_mapping) { mock }
+    let(:name_mapping) { mock }
+    let(:mappings) { [id_mapping, name_mapping] }
+    let(:definition) { stub(:mappings => mappings,
+                            :writer => writer,
+                            :after_row_blocks => []) }
+    let(:context) { stub }
+    let(:writer) { mock }
+
+
+    subject { DataImport::Importer.new(context, definition, nil) }
+
+    describe "#map_row" do
+      it 'calls apply for all mappings' do
+        legacy_row = {:legacy_id => 1, :legacy_name => 'hans'}
+        id_mapping.should_receive(:apply).with(definition, context, legacy_row).and_return(:id => 2)
+        name_mapping.should_receive(:apply).with(definition, context, legacy_row).and_return(:name => 'peter')
+        subject.map_row(legacy_row).should == {:id => 2, :name => 'peter'}
+      end
     end
 
-    it "replaces the keys that occur in the field mapping" do
-      definition.stub(:mappings).and_return { {:personenid => :id} }
-      definition.stub(:target_table_name).and_return { :table }
-      definition.target_database.should_receive(:insert_row).with(:table, :id => 1)
-      subject.send(:import_row, :personenid => 1)
-    end
+    describe "#import_row" do
+      let(:row) { {:id => 1} }
+      before { subject.stub(:map_row => row) }
 
-    it "calls the proc if one is specified in the field mapping" do
-      definition.stub(:mappings).and_return { {:personenid => lambda{|context, value| {:id => 2}}} }
-      definition.stub(:target_table_name).and_return { :table }
-      definition.target_database.should_receive(:insert_row).with(:table, :id => 2)
-      subject.send(:import_row, :personenid => 1)
-    end
+      it "executes the insertion" do
+        writer.should_receive(:write_row).with({:id => 1})
+        definition.stub(:row_imported)
+        subject.import_row(row)
+      end
 
-    it "ignores the return value of the proc when it is nil" do
-      definition.stub(:mappings).and_return { {:personenid => lambda{|context, value| nil }} }
-      definition.stub(:target_table_name).and_return { :table }
-      definition.target_database.should_receive(:insert_row).with(:table, {})
-      subject.send(:import_row, :personenid => 1)
-    end
-
-    it "calls the proc for multiple columns" do
-      definition.stub(:mappings).and_return { {[:a, :b] => lambda{|context, a_value, b_value| {:id => 2}}} }
-      definition.stub(:target_table_name).and_return { :table }
-      definition.target_database.should_receive(:insert_row).with(:table, :id => 2)
-      subject.send(:import_row, :a => 4, :b => 9)
-    end
-
-    it "adds the generated id to the id mapping of the definition" do
-      definition.target_database.stub(:insert_row).and_return { 15 }
-      definition.stub(:source_primary_key).and_return { :id }
-      definition.should_receive(:add_mappings).with(15, {:id => 1})
-      subject.send(:import_row, :id => 1)
-    end
-
-    it 'calls update_row for definitions with a mode uf :update' do
-      definition.stub(:mappings).and_return { {:id => :id} }
-      definition.target_table_name = 'target_table'
-      definition.use_mode(:update)
-      definition.target_database.should_receive(:update_row).with('target_table', {:id => 1})
-
-      subject.send(:import_row, :id => 1)
+      it "adds the generated id to the id mapping of the definition" do
+        definition.writer.stub(:write_row).and_return(15)
+        definition.should_receive(:row_imported).with(15, {:id => 1})
+        subject.import_row(:id => 1)
+      end
     end
   end
 
