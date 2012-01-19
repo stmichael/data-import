@@ -34,6 +34,11 @@ module DataImport
         definition.add_mapping(mapping)
       end
 
+      def seed(seed_hash)
+        mapping = Definition::Simple::SeedMapping.new(seed_hash)
+        definition.add_mapping(mapping)
+      end
+
       def after(&block)
         definition.after_blocks << block
       end

@@ -64,30 +64,43 @@ describe DataImport::Dsl::Import do
     end
   end
 
-  describe "#mapping" do
-    it "adds a column mapping to the definition" do
-      name_mapping = stub
-      DataImport::Definition::Simple::NameMapping.should_receive(:new).with(:a, :b).and_return(name_mapping)
-      definition.should_receive(:add_mapping).with(name_mapping)
+  describe 'mapping definitions' do
+    describe "#mapping" do
+      it "adds a column mapping to the definition" do
+        name_mapping = stub
+        DataImport::Definition::Simple::NameMapping.should_receive(:new).with(:a, :b).and_return(name_mapping)
+        definition.should_receive(:add_mapping).with(name_mapping)
 
-      subject.mapping :a => :b
+        subject.mapping :a => :b
+      end
+
+      let(:block) { lambda{|value|} }
+      it "adds a proc to the mappings" do
+        block_mapping = stub
+        DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a], block).and_return(block_mapping)
+        definition.should_receive(:add_mapping).with(block_mapping)
+
+        subject.mapping :a, &block
+      end
+
+      it "adds a proc with multiple fields to the mappings" do
+        block_mapping = stub
+        DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a, :b], block).and_return(block_mapping)
+        definition.should_receive(:add_mapping).with(block_mapping)
+
+        subject.mapping :a, :b, &block
+      end
     end
 
-    let(:block) { lambda{|value|} }
-    it "adds a proc to the mappings" do
-      block_mapping = stub
-      DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a], block).and_return(block_mapping)
-      definition.should_receive(:add_mapping).with(block_mapping)
+    describe "#seed" do
+      it 'adds a SeedMapping to the definition' do
+        seed_hash = {:message => 'welcome', :source => 'migrated'}
+        seed_mapping = stub
+        DataImport::Definition::Simple::SeedMapping.should_receive(:new).with(seed_hash).and_return(seed_mapping)
+        definition.should_receive(:add_mapping).with(seed_mapping)
 
-      subject.mapping :a, &block
-    end
-
-    it "adds a proc with multiple fields to the mappings" do
-      block_mapping = stub
-      DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a, :b], block).and_return(block_mapping)
-      definition.should_receive(:add_mapping).with(block_mapping)
-
-      subject.mapping :a, :b, &block
+        subject.seed seed_hash
+      end
     end
   end
 

@@ -74,4 +74,14 @@ describe 'mappings' do
       end
     end
   end
+
+  describe DataImport::Definition::Simple::SeedMapping do
+    let(:seed_hash) { {:my_name => 'John', :i_am => 'hungry'} }
+    subject { DataImport::Definition::Simple::SeedMapping.new(seed_hash) }
+
+    it "#apply! adds the passed seed-data" do
+      subject.apply!(nil, nil, nil, output_row)
+      output_row.should == seed_hash
+    end
+  end
 end
