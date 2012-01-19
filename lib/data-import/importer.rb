@@ -8,12 +8,14 @@ module DataImport
     end
 
     def run
-      @definition.reader.each_row do |row|
-        import_row row
-        @progress_reporter.inc
-      end
-      @definition.after_blocks.each do |block|
-        @definition.instance_exec(@context, &block)
+      @definition.writer.transaction do
+        @definition.reader.each_row do |row|
+          import_row row
+          @progress_reporter.inc
+        end
+        @definition.after_blocks.each do |block|
+          @definition.instance_exec(@context, &block)
+        end
       end
     end
 
