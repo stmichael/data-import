@@ -12,9 +12,11 @@ describe DataImport::Dsl::Import do
     context 'when a table-name is passed' do
       it "assigns the source dataset to the definition" do
         reader = stub
-        DataImport::Sequel::Table.should_receive(:new).with(source, 'tblConversions').and_return(reader)
+        DataImport::Sequel::Table.should_receive(:new).
+          with(source, 'tblConversions', :primary_key => 'sID').
+          and_return(reader)
 
-        subject.from 'tblConversions'
+        subject.from 'tblConversions', :primary_key => 'sID'
         definition.reader.should == reader
       end
     end

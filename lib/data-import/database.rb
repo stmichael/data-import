@@ -1,7 +1,6 @@
 require 'sequel'
 require 'iconv'
 
-Sequel.extension(:pagination)
 Sequel.identifier_output_method = :to_s
 
 module DataImport

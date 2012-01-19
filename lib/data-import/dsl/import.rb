@@ -11,7 +11,7 @@ module DataImport
         reader = if block_given?
                     DataImport::Sequel::Dataset.new(definition.source_database, block)
                   else
-                    DataImport::Sequel::Table.new(definition.source_database, table_name, &block)
+                    DataImport::Sequel::Table.new(definition.source_database, table_name, options)
                   end
         definition.reader = reader
       end
