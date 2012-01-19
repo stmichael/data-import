@@ -19,6 +19,13 @@ describe DataImport::Sequel::Writer do
       subject.write_row(:id => 2, :name => 'Switzerland').should == 2
       connection.db[:cities].to_a.should == [{:id => 2, :name => "Switzerland"}]
     end
+
+    it 'works with transactions' do
+      subject.transaction do
+        subject.write_row(:id => 2, :name => 'Switzerland').should == 2
+      end
+      connection.db[:cities].to_a.should have(1).item
+    end
   end
 
   describe DataImport::Sequel::UpdateWriter do
@@ -33,6 +40,14 @@ describe DataImport::Sequel::Writer do
       subject.write_row(:id => 5, :name => 'Switzerland').should == 5
       connection.db[:cities].to_a.should == [{:id => 5, :name => "Switzerland"}]
     end
+
+    it 'works with transactions' do
+      subject.transaction do
+      subject.write_row(:id => 5, :name => 'Switzerland').should == 5
+      end
+      connection.db[:cities].to_a.should have(1).item
+    end
+
 
     it 'raises an error when no :id was in the row' do
       lambda do

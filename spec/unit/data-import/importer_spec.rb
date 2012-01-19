@@ -13,7 +13,10 @@ describe DataImport::Importer do
 
   describe "#run" do
     let(:reader) { mock }
+    let(:writer) { mock }
     before { definition.stub(:reader => reader) }
+    before { definition.stub(:writer => writer) }
+    before { writer.stub(:transaction).and_yield }
 
     it "call #import_row for each row" do
       definition.reader.should_receive(:each_row).

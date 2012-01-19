@@ -7,6 +7,10 @@ module DataImport
         @table_name = table_name
       end
 
+      def transaction(&block)
+        @connection.db.transaction(&block)
+      end
+
       def write_row(row)
         raise NotImplementedError
       end
