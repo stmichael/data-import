@@ -1,24 +1,29 @@
 require 'unit/spec_helper'
 
 describe 'mappings' do
+  let(:output_row) { {} }
+
   describe DataImport::Definition::Simple::NameMapping do
-    describe "#apply" do
+    describe "#apply!" do
       subject { described_class.new('sLegacyID', :id) }
 
-      it '#apply changes the column name form <old> to <new> when applied' do
-        subject.apply(nil, nil, {:sLegacyID => 5}).should == {:id => 5}
+      it '#apply! changes the column name form <old> to <new> when applied' do
+        row = {:sLegacyID => 5}
+        subject.apply!(nil, nil, row, output_row)
+        output_row.should == {:id => 5}
       end
 
-      it '#apply returns an empty mapping when the mapped column is not present' do
-        subject.apply(nil, nil, {:sOtherLegacyID => 5}).should == {}
+      it '#apply! does nothing when the mapped column is not present' do
+        row = {:sOtherLegacyID => 5}
+        subject.apply!(nil, nil, row, output_row)
+        output_row.should == {}
       end
     end
   end
 
   describe DataImport::Definition::Simple::BlockMapping do
     let(:a_block) { lambda {} }
-
-    describe "#apply" do
+    describe "#apply!" do
       let(:context) { stub }
       let(:definition) { stub }
 
@@ -31,7 +36,9 @@ describe 'mappings' do
         subject { described_class.new('sLegacyID', a_block) }
 
         it 'calls the block with the column value' do
-          subject.apply(definition, context, {:sLegacyID => 4}).should == {:id_times_two => 8}
+          row = {:sLegacyID => 4}
+          subject.apply!(definition, context, row, output_row)
+          output_row.should == {:id_times_two => 8}
         end
       end
 
@@ -45,7 +52,9 @@ describe 'mappings' do
         subject { described_class.new([:sLegacyID, :strLegacyName], a_block) }
 
         it 'calls the block with the column values' do
-          subject.apply(definition, context, {:sLegacyID => 3, :strLegacyName => 'Times four: '}).should == {:result => 'Times four: 12'}
+          row = {:sLegacyID => 3, :strLegacyName => 'Times four: '}
+          subject.apply!(definition, context, row, output_row)
+          output_row.should == {:result => 'Times four: 12'}
         end
       end
 
@@ -59,7 +68,8 @@ describe 'mappings' do
 
         it 'passes the wole row to the block' do
           row = {:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'}
-          subject.apply(definition, context, row).should == {:received_row => row}
+          subject.apply!(definition, context, row, output_row)
+          output_row.should == {:received_row => row}
         end
       end
     end

@@ -6,11 +6,9 @@ module DataImport
         @to = to.to_sym
       end
 
-      def apply(_definition, _context, row)
+      def apply!(_definition, _context, row, output_row)
         if row.has_key?(@from)
-          { @to => row[@from] }
-        else
-          {}
+          output_row[@to] = row[@from]
         end
       end
     end
@@ -21,13 +19,13 @@ module DataImport
         @block = block
       end
 
-      def apply(definition, context, row)
+      def apply!(definition, context, row, output_row)
         arguments = [context] + if @columns == [:*]
                                   [row]
                                 else
                                   @columns.map {|column| row[column] }
                                 end
-        definition.instance_exec(*arguments, &@block)
+        output_row.merge!(definition.instance_exec(*arguments, &@block) || {})
       end
     end
   end

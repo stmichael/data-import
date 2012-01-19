@@ -18,9 +18,11 @@ module DataImport
     end
 
     def map_row(row)
-      @definition.mappings.inject({}) do |mapped_row, mapping|
-        mapped_row.merge(mapping.apply(@definition, @context, row) || {})
+      mapped_row = {}
+      @definition.mappings.each do |mapping|
+        mapping.apply!(@definition, @context, row, mapped_row)
       end
+      mapped_row
     end
 
     def import_row(row)
