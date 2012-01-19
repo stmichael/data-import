@@ -101,9 +101,9 @@ describe DataImport::Importer do
     describe "#map_row" do
       it 'calls apply for all mappings' do
         legacy_row = {:legacy_id => 1, :legacy_name => 'hans'}
-        id_mapping.should_receive(:apply).with(definition, context, legacy_row).and_return(:id => 2)
-        name_mapping.should_receive(:apply).with(definition, context, legacy_row).and_return(:name => 'peter')
-        subject.map_row(legacy_row).should == {:id => 2, :name => 'peter'}
+        id_mapping.should_receive(:apply!).with(definition, context, legacy_row, {})
+        name_mapping.should_receive(:apply!).with(definition, context, legacy_row, {})
+        subject.map_row(legacy_row).should == {}
       end
     end
 
