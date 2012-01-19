@@ -9,13 +9,12 @@ module DataImport
         @base_query_block = base_query_block
       end
 
-      def each_row
-        base_query.each_page(BATCH_SIZE) do |batch|
-          batch.each do |row|
-            @connection.before_filter.call(row) if @connection.before_filter
-            yield row
-          end
-        end
+      def each_row(&block)
+        iterate_dataset(selection, &block)
+      end
+
+      def selection
+        base_query
       end
 
       def count
@@ -26,7 +25,13 @@ module DataImport
         @base_query_block.call(@connection.db)
       end
 
-
+      def iterate_dataset(dataset, &block)
+        dataset.each do |row|
+          @connection.before_filter.call(row) if @connection.before_filter
+          block.call(row)
+        end
+      end
+      private :iterate_dataset
     end
   end
 end

@@ -19,7 +19,7 @@ module DataImport
 
     def map_row(row)
       @definition.mappings.inject({}) do |mapped_row, mapping|
-        mapped_row.merge(mapping.apply(@definition, @context, row))
+        mapped_row.merge(mapping.apply(@definition, @context, row) || {})
       end
     end
 

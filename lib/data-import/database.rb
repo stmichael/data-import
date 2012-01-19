@@ -1,7 +1,6 @@
 require 'sequel'
 require 'iconv'
 
-Sequel.extension(:pagination)
 Sequel.identifier_output_method = :to_s
 
 module DataImport
@@ -25,21 +24,6 @@ module DataImport
 
       def initialize(db)
         @db = db
-      end
-
-      def truncate(table)
-        @db.from(table).delete
-      end
-
-      def transaction(&block)
-        @db.transaction do
-          yield block
-        end
-      end
-
-      def update_row(table, row)
-        id = row.delete(:id) || row.delete('id')
-        @db.from(table).filter(:id => id).update(row)
       end
     end
 

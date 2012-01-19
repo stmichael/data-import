@@ -32,33 +32,4 @@ describe DataImport::Database do
       subject.connect(options).should == connection
     end
   end
-
-end
-
-describe DataImport::Database::Connection do
-  let(:table) { Object.new }
-  let(:dummy_db) do
-    class DummyDB
-    end
-    DummyDB.any_instance.stub(:from).and_return { table }
-    DummyDB
-  end
-  let(:db) { dummy_db.new }
-  subject { DataImport::Database::Connection.new db }
-
-  describe "#truncate" do
-    it "deletes all rows from a table" do
-      table.should_receive(:delete)
-      subject.truncate('svp')
-    end
-  end
-
-  describe "#transaction" do
-    let(:block) { Proc.new {} }
-
-    it "runs the block in a transaction" do
-      db.should_receive(:transaction)
-      subject.transaction &block
-    end
-  end
 end

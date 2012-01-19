@@ -10,15 +10,28 @@ describe "simple mappings" do
       mapping 'sAnimalID' => :id
       mapping 'strAnimalTitleText' => :name
       mapping 'sAnimalAge' => 'age'
+
+      # Single column block mapping
       mapping 'strThreat' do |context, threat|
         rating = ['none', 'medium', 'high'].index(threat) + 1
         {:danger_rating => rating}
       end
+
+      # Multi column block mapping
       mapping 'strAnimalTitleText', 'sAnimalAge' do |context, title, age|
         {:formatted_name_cache => "%s (%d)" % [title, age]}
       end
+
+      # Wildcard mapping
       mapping '*' do |context, row|
         {:legacy_backup => "ID was #{row[:sAnimalID]}"}
+      end
+
+      # Conditional mapping
+      mapping 'strThreat' do |context, threat|
+        if threat == 'high'
+          {:danger_note => 'This animal is dangerous!'}
+        end
       end
 
       after_row do |context, old_row, mapped_row|
@@ -59,6 +72,7 @@ describe "simple mappings" do
       Integer :age
       Integer :danger_rating
       String :formatted_name_cache
+      String :danger_note
     end
 
     target.create_table :animal_logs do
@@ -95,11 +109,11 @@ describe "simple mappings" do
 
   it 'mapps columns to the new schema' do
     DataImport.run_plan!(plan)
-    target_database[:animals].to_a.should == [{:id => 1, :name => "Tiger", :age => 23, :danger_rating => 3,
+    target_database[:animals].to_a.should == [{:id => 1, :name => "Tiger", :age => 23, :danger_rating => 3, :danger_note => 'This animal is dangerous!',
                                                 :formatted_name_cache => 'Tiger (23)', :legacy_backup => "ID was 1"},
-                                              {:id => 99, :name => "Cat", :age => 5, :danger_rating => 1,
+                                              {:id => 99, :name => "Cat", :age => 5, :danger_rating => 1, :danger_note => nil,
                                                 :formatted_name_cache => 'Cat (5)', :legacy_backup => "ID was 99"},
-                                              {:id => 1293, :name => "Horse", :age => 11, :danger_rating => 2,
+                                              {:id => 1293, :name => "Horse", :age => 11, :danger_rating => 2, :danger_note => nil,
                                                 :formatted_name_cache => 'Horse (11)', :legacy_backup => "ID was 1293"}]
   end
 
