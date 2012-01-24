@@ -27,6 +27,17 @@ module DataImport
                                 end
         output_row.merge!(definition.instance_exec(*arguments, &@block) || {})
       end
+
+    end
+
+    class SeedMapping
+      def initialize(seed_hash)
+        @seed_hash = seed_hash
+      end
+
+      def apply!(_definition, _context, _row, output_row)
+        output_row.merge!(@seed_hash)
+      end
     end
   end
 end
