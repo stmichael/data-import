@@ -25,6 +25,10 @@ module DataImport
       def initialize(db)
         @db = db
       end
+
+      def adapter_scheme
+        db.adapter_scheme
+      end
     end
 
   end

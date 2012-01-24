@@ -22,6 +22,9 @@ module DataImport
                  else
                    DataImport::Sequel::InsertWriter.new(definition.target_database, table_name)
                  end
+        if definition.target_database.adapter_scheme == :postgres
+          writer.extend DataImport::Sequel::Postgres::UpdateSequence
+        end
         definition.writer = writer
       end
 
