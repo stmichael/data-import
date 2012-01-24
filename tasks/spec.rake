@@ -13,6 +13,9 @@ namespace :spec do
     t.pattern    = "spec/acceptance/**/*_spec.rb"
   end
 
+  RSpec::Core::RakeTask.new(:db_specific) do |t|
+    t.pattern    = "spec/db_specific/**/*_spec.rb"
+  end
 end
 
 task :spec => ['spec:unit', 'spec:integration', 'spec:acceptance']
