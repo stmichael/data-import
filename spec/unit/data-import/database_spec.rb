@@ -32,4 +32,16 @@ describe DataImport::Database do
       subject.connect(options).should == connection
     end
   end
+
+  describe DataImport::Database::Connection do
+    describe "#adapter_scheme" do
+      let(:db) { stub }
+      subject { DataImport::Database::Connection.new(db) }
+
+      it "delegates to db" do
+        db.stub(:adapter_scheme => :postgres)
+        subject.adapter_scheme.should == :postgres
+      end
+    end
+  end
 end
