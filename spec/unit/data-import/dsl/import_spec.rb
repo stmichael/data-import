@@ -2,7 +2,7 @@ require 'unit/spec_helper'
 
 describe DataImport::Dsl::Import do
 
-  let(:source) { stub }
+  let(:source) { stub(:adapter_scheme => 'sqlite') }
   let(:target) { stub }
 
   let(:definition) { DataImport::Definition::Simple.new('d', source, target) }
@@ -36,6 +36,7 @@ describe DataImport::Dsl::Import do
 
   describe "#to" do
     it "assigns a table-writer for the given table to the definition" do
+      target.stub(:adapter_scheme)
       writer = stub
       DataImport::Sequel::InsertWriter.should_receive(:new).with(target, 'tblChickens').and_return(writer)
       subject.to 'tblChickens'
@@ -43,10 +44,20 @@ describe DataImport::Dsl::Import do
     end
 
     it 'uses an UpdateWriter when the :mode is set to :update' do
+      target.stub(:adapter_scheme)
       writer = stub
       DataImport::Sequel::UpdateWriter.should_receive(:new).with(target, 'tblFoxes').and_return(writer)
       subject.to 'tblFoxes', :mode => :update
       definition.writer.should == writer
+    end
+
+    it 'extends the writer with the UpdateSequence module if the database is postgres' do
+      target.stub(:adapter_scheme => :postgres)
+      writer = stub
+      DataImport::Sequel::InsertWriter.stub(:new => writer)
+
+      subject.to 'tblChickens'
+      writer.should be_kind_of(DataImport::Sequel::Postgres::UpdateSequence)
     end
   end
 

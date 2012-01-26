@@ -4,7 +4,7 @@ module DataImport
 
       def initialize(connection, table_name)
         @connection = connection
-        @table_name = table_name
+        @table_name = table_name.to_sym
       end
 
       def transaction(&block)
