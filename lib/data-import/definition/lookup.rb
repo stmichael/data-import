@@ -28,6 +28,10 @@ module DataImport
 
       def identify_by(name, value)
         if has_lookup_table_named?(name)
+          config = config_named(name)
+          if config.ignore_case? && value
+            value = value.downcase
+          end
           lookup_table_named(name)[value]
         else
           raise ArgumentError, "no lookup-table defined named '#{name}'"
@@ -44,13 +48,21 @@ module DataImport
 
       def add_lookup_value(attribute, value, id)
         return if value.blank?
-        name = config_for(attribute).name
-        lookup_table_named(name)[value] = id
+        config = config_for(attribute)
+        if config.ignore_case?
+          value = value.downcase
+        end
+        lookup_table_named(config.name)[value] = id
       end
       private :add_lookup_value
 
       def config_for(attribute)
         @lookup_table_configurations[attribute]
+      end
+      private :config_for
+
+      def config_named(name)
+        @lookup_table_configurations.values.detect {|c| c.name == name}
       end
       private :config_for
 
@@ -64,6 +76,7 @@ module DataImport
 
         def initialize(name, options = {})
           @name = name.to_sym
+          @ignore_case = options.fetch(:ignore_case) { false }
           @attribute = if options.has_key?(:column)
                          options[:column].to_sym
                        else
@@ -73,6 +86,10 @@ module DataImport
 
         def for?(attribute)
           @attribute = attribute
+        end
+
+        def ignore_case?
+          @ignore_case
         end
       end
 
