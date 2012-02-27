@@ -1,45 +1,43 @@
 module DataImport
   class Definition
     module Lookup
-
       def initialize(*args)
-        @lookup_table_configurations = {}
         @lookup_tables = {}
         super
       end
 
       def lookup_for(name, options = {})
-        config = LookupTableConfig.new(name, options)
-        if has_lookup_table_on?(config.attribute)
-          raise ArgumentError, "lookup-table for column '#{config.attribute}' was already defined"
+        attribute = options.fetch(:column) { name }
+
+        if has_lookup_table_on?(attribute)
+          raise ArgumentError, "lookup-table for column '#{attribute}' was already defined"
         else
-          @lookup_table_configurations[config.attribute] = config
-          @lookup_tables[config.name] = {}
+          @lookup_tables[name] = if options.fetch(:ignore_case) { false }
+                                   CaseIgnoringTable.new(attribute)
+                                 else
+                                   Table.new(attribute)
+                                 end
         end
       end
 
       def row_imported(id, row)
         row.each do |attribute, value|
-          if has_lookup_table_on?(attribute)
-            add_lookup_value(attribute, value, id)
-          end
+          next if value.blank?
+          add_lookup_value(attribute, value, id)
         end
       end
 
       def identify_by(name, value)
+        return if value.blank?
         if has_lookup_table_named?(name)
-          config = config_named(name)
-          if config.ignore_case? && value
-            value = value.downcase
-          end
-          lookup_table_named(name)[value]
+          @lookup_tables[name].lookup(value)
         else
           raise ArgumentError, "no lookup-table defined named '#{name}'"
         end
       end
 
       def has_lookup_table_on?(attribute)
-        !!config_for(attribute.to_sym)
+        @lookup_tables.values.any? { |t| t.for?(attribute) }
       end
 
       def has_lookup_table_named?(name)
@@ -47,49 +45,44 @@ module DataImport
       end
 
       def add_lookup_value(attribute, value, id)
-        return if value.blank?
-        config = config_for(attribute)
-        if config.ignore_case?
-          value = value.downcase
+        @lookup_tables.each do |_name, table|
+          table.process(attribute, value, id)
         end
-        lookup_table_named(config.name)[value] = id
       end
       private :add_lookup_value
 
-      def config_for(attribute)
-        @lookup_table_configurations[attribute]
-      end
-      private :config_for
-
-      def config_named(name)
-        @lookup_table_configurations.values.detect {|c| c.name == name}
-      end
-      private :config_for
-
-      def lookup_table_named(name)
-        @lookup_tables[name]
-      end
-      private :lookup_table_named
-
-      class LookupTableConfig
-        attr_accessor :name, :attribute
-
-        def initialize(name, options = {})
-          @name = name.to_sym
-          @ignore_case = options.fetch(:ignore_case) { false }
-          @attribute = if options.has_key?(:column)
-                         options[:column].to_sym
-                       else
-                         @name
-                       end
+      class Table
+        def initialize(attribute)
+          @attribute = attribute.to_sym
+          @mappings = {}
         end
 
         def for?(attribute)
-          @attribute = attribute
+          @attribute == attribute.to_sym
         end
 
-        def ignore_case?
-          @ignore_case
+        def process(attribute, key, id)
+          if for?(attribute)
+            add(key, id)
+          end
+        end
+
+        def add(key, id)
+          @mappings[key] = id
+        end
+
+        def lookup(key)
+          @mappings[key]
+        end
+      end
+
+      class CaseIgnoringTable < Table
+        def add(key, id)
+          super(key.downcase, id)
+        end
+
+        def lookup(key)
+          super(key.downcase)
         end
       end
 
