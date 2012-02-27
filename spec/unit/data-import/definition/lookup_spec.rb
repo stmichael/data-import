@@ -58,7 +58,6 @@ describe DataImport::Definition::Lookup do
         subject.lookup_for :same_code, :column => :code
       end.should raise_error(ArgumentError, "lookup-table for column 'code' was already defined")
     end
-
   end
 
   describe 'mappings and lookups' do
@@ -100,6 +99,24 @@ describe DataImport::Definition::Lookup do
       subject.row_imported(do_not_map_this_id, :code => nil)
 
       subject.identify_by(:code, nil).should == nil
+    end
+  end
+
+  context 'Case Ignoring LookupTable' do
+    before do
+      subject.lookup_for :reference, :ignore_case => true
+    end
+
+    it 'ignores case if specified' do
+      id = 9
+      subject.row_imported(id, :reference => 'i-AM-a-REF')
+
+      subject.identify_by(:reference, 'i-am-a-reF').should == id
+    end
+
+    it 'works with nil values' do
+      id = 9
+      subject.identify_by(:reference, nil).should == nil
     end
   end
 end
