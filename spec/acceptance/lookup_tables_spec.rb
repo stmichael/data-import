@@ -8,7 +8,7 @@ describe "lookup tables" do
       to 'articles'
 
       lookup_for :sArticleId
-      lookup_for :reference, :column => 'strRef'
+      lookup_for :reference, :column => 'strRef', :ignore_case => true
 
       mapping 'strRef' => 'slug'
     end
@@ -61,10 +61,10 @@ describe "lookup tables" do
                              :strArticleRef => 'data-import-is-awesome')
     source[:tblPosts].insert(:sPostId => 8,
                              :sArticleId => 10001,
-                             :strArticleRef => 'ruby-is-awesome')
+                             :strArticleRef => 'ruby-IS-awesome')
     source[:tblPosts].insert(:sPostId => 9,
                              :sArticleId => 20002,
-                             :strArticleRef => 'data-import-is-awesome')
+                             :strArticleRef => 'DATA-import-IS-awesome')
     source[:tblPosts].insert(:sPostId => 10)
 
   end
