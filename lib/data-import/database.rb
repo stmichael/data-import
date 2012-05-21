@@ -1,5 +1,4 @@
 require 'sequel'
-require 'iconv'
 
 Sequel.identifier_output_method = :to_s
 
