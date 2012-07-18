@@ -1,7 +1,6 @@
 # DataImport
 
 [![Build Status](https://secure.travis-ci.org/garaio/data-import.png)](http://travis-ci.org/garaio/data-import)
-
 [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/garaio/data-import)
 
 data-import is a data-migration framework. The goal of the project is to provide a simple api to migrate data from a legacy schema into a new one. It's based on jeremyevans/sequel.
