@@ -35,9 +35,10 @@ describe DataImport::Dsl::Import do
   end
 
   describe "#to" do
+    let(:writer) { stub('writer') }
+
     it "assigns a table-writer for the given table to the definition" do
       target.stub(:adapter_scheme)
-      writer = stub
       DataImport::Sequel::InsertWriter.should_receive(:new).with(target, 'tblChickens').and_return(writer)
       subject.to 'tblChickens'
       definition.writer.should == writer
@@ -45,7 +46,6 @@ describe DataImport::Dsl::Import do
 
     it 'uses an UpdateWriter when the :mode is set to :update' do
       target.stub(:adapter_scheme)
-      writer = stub
       DataImport::Sequel::UpdateWriter.should_receive(:new).with(target, 'tblFoxes').and_return(writer)
       subject.to 'tblFoxes', :mode => :update
       definition.writer.should == writer
@@ -53,11 +53,18 @@ describe DataImport::Dsl::Import do
 
     it 'extends the writer with the UpdateSequence module if the database is postgres' do
       target.stub(:adapter_scheme => :postgres)
-      writer = stub
       DataImport::Sequel::InsertWriter.stub(:new => writer)
 
       subject.to 'tblChickens'
       writer.should be_kind_of(DataImport::Sequel::Postgres::UpdateSequence)
+    end
+
+    it 'uses a UniqueWriter when the :mode is set to :unique' do
+      target.stub(:adapter_scheme)
+      DataImport::Sequel::UniqueWriter.should_receive(:new).with(target, 'tblAdresses', :columns => [:name, :gender]).and_return(writer)
+
+      subject.to 'tblAdresses', :mode => [:unique, :columns => [:name, :gender]]
+      definition.writer.should == writer
     end
   end
 

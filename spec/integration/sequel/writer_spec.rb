@@ -43,7 +43,7 @@ describe DataImport::Sequel::Writer do
 
     it 'works with transactions' do
       subject.transaction do
-      subject.write_row(:id => 5, :name => 'Switzerland').should == 5
+        subject.write_row(:id => 5, :name => 'Switzerland').should == 5
       end
       connection.db[:cities].to_a.should have(1).item
     end
@@ -53,6 +53,29 @@ describe DataImport::Sequel::Writer do
       lambda do
         subject.write_row(:name => 'this will not work')
       end.should raise_error(DataImport::MissingIdError)
+    end
+  end
+
+  describe DataImport::Sequel::UniqueWriter do
+    subject { DataImport::Sequel::UniqueWriter.new(connection, table_name, :columns => [:name]) }
+
+    it 'writes a row to the specified table' do
+      subject.write_row(:id => 3, :name => 'Italy').should == 3
+      connection.db[:cities].to_a.should == [{:id => 3, :name => 'Italy'}]
+    end
+
+    it 'works with transactions' do
+      subject.transaction do
+        subject.write_row(:id => 3, :name => 'Italy').should == 3
+      end
+      connection.db[:cities].to_a.should have(1).item
+    end
+
+    it 'doesn\'t write a record if a similar record exists' do
+      connection.db[:cities].insert(:id => 6, :name => 'Spain')
+
+      subject.write_row(:id => 2, :name => 'Spain').should == 6
+      connection.db[:cities].to_a.should have(1).item
     end
   end
 

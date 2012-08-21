@@ -19,6 +19,8 @@ module DataImport
       def to(table_name, options = {})
         writer = if options[:mode] == :update
                    DataImport::Sequel::UpdateWriter.new(definition.target_database, table_name)
+                 elsif options[:mode].kind_of?(Array) && options[:mode].first == :unique
+                   DataImport::Sequel::UniqueWriter.new(definition.target_database, table_name, options[:mode].last)
                  else
                    DataImport::Sequel::InsertWriter.new(definition.target_database, table_name)
                  end

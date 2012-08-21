@@ -38,5 +38,22 @@ module DataImport
       end
     end
 
+    class UniqueWriter < Writer
+      def initialize(connection, table_name, options = {})
+        super(connection, table_name)
+        @options = options
+      end
+
+      def write_row(row)
+        existing_row_id(row) || base_relation.insert(row)
+      end
+
+      def existing_row_id(row)
+        unique_row = row.select{|k, v| @options[:columns].include?(k)}
+        (base_relation.filter(unique_row).first || {})[:id]
+      end
+      private :existing_row_id
+    end
+
   end
 end
