@@ -7,6 +7,7 @@ module DataImport
       attr_accessor :target_table_name
       attr_accessor :reader, :writer
       attr_accessor :after_blocks, :after_row_blocks
+      attr_accessor :row_validation_blocks
 
       def initialize(name, source_database, target_database)
         super
@@ -14,6 +15,7 @@ module DataImport
         @mode = :insert
         @after_blocks = []
         @after_row_blocks = []
+        @row_validation_blocks = []
       end
 
       def mappings

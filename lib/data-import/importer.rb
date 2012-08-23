@@ -29,12 +29,22 @@ module DataImport
 
     def import_row(row)
       mapped_row = map_row(row)
-      new_id = @definition.writer.write_row(mapped_row)
-      @definition.row_imported(new_id, row)
 
-      @definition.after_row_blocks.each do |block|
-        @definition.instance_exec(@context, row, mapped_row, &block)
+      if row_valid?(mapped_row)
+        new_id = @definition.writer.write_row(mapped_row)
+        @definition.row_imported(new_id, row)
+
+        @definition.after_row_blocks.each do |block|
+          @definition.instance_exec(@context, row, mapped_row, &block)
+        end
       end
     end
+
+    def row_valid?(row)
+      @definition.row_validation_blocks.all? do |block|
+        @definition.instance_exec(@context, row, &block)
+      end
+    end
+    private :row_valid?
   end
 end

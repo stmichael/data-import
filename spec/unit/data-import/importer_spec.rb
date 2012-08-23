@@ -64,6 +64,31 @@ describe DataImport::Importer do
         found_name.should == 'A'
       end
     end
+
+    context 'validation' do
+      let(:writer) { mock }
+      before { definition.writer = writer }
+
+      it 'validates data before insertion' do
+        validated_rows = []
+        definition.row_validation_blocks << Proc.new do |context, row|
+          validated_rows << row
+          true
+        end
+
+        subject.should_receive(:map_row).with({:id => 1}).and_return({:new_id => 1})
+        writer.should_receive(:write_row).any_number_of_times
+        subject.import_row(:id => 1)
+        validated_rows.should == [{:new_id => 1}]
+      end
+
+      it 'doesn\'t insert an invalid row' do
+        definition.row_validation_blocks << Proc.new { false }
+
+        writer.should_not_receive(:write_row)
+        subject.import_row(:id => 1)
+      end
+    end
   end
 
   context 'after row blocks' do
@@ -94,7 +119,8 @@ describe DataImport::Importer do
     let(:mappings) { [id_mapping, name_mapping] }
     let(:definition) { stub(:mappings => mappings,
                             :writer => writer,
-                            :after_row_blocks => []) }
+                            :after_row_blocks => [],
+                            :row_validation_blocks => []) }
     let(:context) { stub }
     let(:writer) { mock }
 
