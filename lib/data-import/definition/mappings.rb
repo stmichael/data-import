@@ -30,6 +30,19 @@ module DataImport
 
     end
 
+    class ReferenceMapping
+      def initialize(referenced_definition, old_foreign_key, new_foreign_key, lookup_name = :id)
+        @referenced_definition = referenced_definition
+        @old_foreign_key = old_foreign_key.to_sym
+        @new_foreign_key = new_foreign_key.to_sym
+        @lookup_name = lookup_name
+      end
+
+      def apply!(definition, context, row, output_row)
+        output_row.merge!(@new_foreign_key => context.definition(@referenced_definition).identify_by(@lookup_name, row[@old_foreign_key]))
+      end
+    end
+
     class SeedMapping
       def initialize(seed_hash)
         @seed_hash = seed_hash

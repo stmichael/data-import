@@ -39,6 +39,13 @@ module DataImport
         definition.add_mapping(mapping)
       end
 
+      def reference(name, options = {})
+        lookup_name = options.delete(:lookup) || :id
+        old_foreign_key = options.keys.first
+        new_foreign_key = options[old_foreign_key]
+        definition.add_mapping(Definition::Simple::ReferenceMapping.new(name, old_foreign_key, new_foreign_key, lookup_name))
+      end
+
       def seed(seed_hash)
         mapping = Definition::Simple::SeedMapping.new(seed_hash)
         definition.add_mapping(mapping)

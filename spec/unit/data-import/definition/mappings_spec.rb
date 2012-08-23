@@ -75,6 +75,40 @@ describe 'mappings' do
     end
   end
 
+  describe DataImport::Definition::Simple::ReferenceMapping do
+    let(:context) { stub }
+    let(:definition) { stub }
+
+    context 'with a specific id lookup name' do
+      subject { described_class.new('OldAddress', :sLegacyAddressId, :address_id, :reference) }
+
+      it 'sets the foreign key to the newly generated primary key' do
+        row = {:sLegacyAddressId => 28}
+
+        address_definition = stub
+        context.should_receive(:definition).with('OldAddress').and_return(address_definition)
+        address_definition.should_receive(:identify_by).with(:reference, 28).and_return(4)
+
+        subject.apply!(definition, context, row, output_row)
+        output_row.should == {:address_id => 4}
+      end
+    end
+
+    context 'with the default lookup name' do
+      subject { described_class.new('OldAddress', :sLegacyAddressId, :address_id) }
+
+      it 'uses :id to look up the newly generated id' do
+        row = {:sLegacyAddressId => 28}
+
+        address_definition = stub
+        context.should_receive(:definition).with('OldAddress').and_return(address_definition)
+        address_definition.should_receive(:identify_by).with(:id, 28)
+
+        subject.apply!(definition, context, row, output_row)
+      end
+    end
+  end
+
   describe DataImport::Definition::Simple::SeedMapping do
     let(:seed_hash) { {:my_name => 'John', :i_am => 'hungry'} }
     subject { DataImport::Definition::Simple::SeedMapping.new(seed_hash) }
