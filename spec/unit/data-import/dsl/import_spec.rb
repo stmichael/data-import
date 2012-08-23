@@ -136,4 +136,10 @@ describe DataImport::Dsl::Import do
     definition.after_row_blocks == [my_block]
   end
 
+  it '#validate_row adds a validation block' do
+    validation_block = lambda {}
+    subject.validate_row &validation_block
+    definition.row_validation_blocks.should == [validation_block]
+  end
+
 end
