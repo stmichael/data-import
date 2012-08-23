@@ -52,6 +52,10 @@ module DataImport
         definition.after_row_blocks << block
       end
 
+      def validate_row(&block)
+        definition.row_validation_blocks << block
+      end
+
       def dependencies(*dependencies)
         dependencies.each do |dependency|
           definition.add_dependency(dependency)
