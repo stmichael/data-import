@@ -6,7 +6,8 @@ describe DataImport::Importer do
   let(:target) { stub }
   let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target }
   let(:definition) { DataImport::Definition::Simple.new 'A', source, target }
-  let(:context) { stub }
+  let(:context) { stub(:name => 'A', :build_local_context => local_context) }
+  let(:local_context) { stub }
   let(:progress_reporter) { stub }
   before { context.stub(:definition).with('C').and_return(other_definition) }
   subject { DataImport::Importer.new(context, definition, progress_reporter) }
@@ -121,7 +122,8 @@ describe DataImport::Importer do
                             :writer => writer,
                             :after_row_blocks => [],
                             :row_validation_blocks => []) }
-    let(:context) { stub }
+    let(:context) { stub(:build_local_context => local_context) }
+    let(:local_context) { stub }
     let(:writer) { mock }
 
 
@@ -130,8 +132,8 @@ describe DataImport::Importer do
     describe "#map_row" do
       it 'calls apply for all mappings' do
         legacy_row = {:legacy_id => 1, :legacy_name => 'hans'}
-        id_mapping.should_receive(:apply!).with(definition, context, legacy_row, {})
-        name_mapping.should_receive(:apply!).with(definition, context, legacy_row, {})
+        id_mapping.should_receive(:apply!).with(definition, local_context, legacy_row, {})
+        name_mapping.should_receive(:apply!).with(definition, local_context, legacy_row, {})
         subject.map_row(legacy_row).should == {}
       end
     end

@@ -109,6 +109,7 @@ describe 'definition dependencies' do
 
         mapping 'sOwnerID' do |context, value|
           context.definition('Owners')
+          definition('Owners')
           {}
         end
       end
