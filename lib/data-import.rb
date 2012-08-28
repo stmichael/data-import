@@ -16,15 +16,40 @@ require 'data-import/sequel/postgres/update_sequence'
 require 'data-import/database'
 require 'data-import/definition'
 require 'data-import/importer'
+require 'data-import/logger'
 
 module DataImport
-  def self.run_config!(config_path, options = {})
-    plan = DataImport::Dsl.evaluate_import_config(config_path)
-    run_plan!(plan, options)
-  end
+  class << self
+    def run_config!(config_path, options = {})
+      plan = DataImport::Dsl.evaluate_import_config(config_path)
+      run_plan!(plan, options)
+    end
 
-  def self.run_plan!(plan, options = {})
-    runner = Runner.new(plan)
-    runner.run(options)
+    def run_plan!(plan, options = {})
+      runner = Runner.new(plan)
+      runner.run(options)
+    end
+
+    def logger
+      @logger ||= Logger.new(full_logger, important_logger)
+    end
+
+    def full_logger
+      @full_logger || ::Logger.new(File.new('import.log', 'w'))
+    end
+
+    def full_logger=(logger)
+      @logger = nil
+      @full_logger = logger
+    end
+
+    def important_logger
+      @important_logger || ::Logger.new($stdout)
+    end
+
+    def important_logger=(logger)
+      @logger = nil
+      @important_logger = logger
+    end
   end
 end
