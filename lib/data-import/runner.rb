@@ -13,7 +13,10 @@ module DataImport
       resolved_plan = dependency_resolver.resolve(:run_only => options[:only])
       resolved_plan.definitions.each do |definition|
         bar = @progress_reporter.new(definition.name, definition.total_steps_required)
+
+        DataImport.logger.info "Starting to import \"#{definition.name}\""
         definition.run(ExecutionContext.new(resolved_plan, definition), bar)
+
         bar.finish
       end
     end
@@ -23,6 +26,10 @@ module DataImport
         super(values)
         @execution_plan = execution_plan
         @definition = definition
+      end
+
+      def logger
+        DataImport.logger
       end
 
       def definition(name)
