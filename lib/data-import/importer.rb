@@ -14,7 +14,7 @@ module DataImport
           @progress_reporter.inc
         end
         @definition.after_blocks.each do |block|
-          @definition.instance_exec(@context, &block)
+          @context.instance_exec(@context, &block)
         end
       end
     end
@@ -22,7 +22,8 @@ module DataImport
     def map_row(row)
       mapped_row = {}
       @definition.mappings.each do |mapping|
-        mapping.apply!(@definition, @context, row, mapped_row)
+        local_context = @context.build_local_context(:row => row, :mapped_row => mapped_row)
+        mapping.apply!(@definition, local_context, row, mapped_row)
       end
       mapped_row
     end
@@ -35,14 +36,16 @@ module DataImport
         @definition.row_imported(new_id, row)
 
         @definition.after_row_blocks.each do |block|
-          @definition.instance_exec(@context, row, mapped_row, &block)
+          local_context = @context.build_local_context(:row => row, :mapped_row => mapped_row)
+          local_context.instance_exec(local_context, row, mapped_row, &block)
         end
       end
     end
 
     def row_valid?(row)
       @definition.row_validation_blocks.all? do |block|
-        @definition.instance_exec(@context, row, &block)
+        local_context = @context.build_local_context(:row => row)
+        local_context.instance_exec(local_context, row, &block)
       end
     end
     private :row_valid?

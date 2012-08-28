@@ -25,7 +25,7 @@ module DataImport
                                 else
                                   @columns.map {|column| row[column] }
                                 end
-        output_row.merge!(definition.instance_exec(*arguments, &@block) || {})
+        output_row.merge!(context.instance_exec(*arguments, &@block) || {})
       end
 
     end

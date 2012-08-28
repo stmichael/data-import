@@ -34,6 +34,7 @@ module DataImport
         mapping = if hash_or_symbols.first.is_a? Hash
                     Definition::Simple::NameMapping.new(*hash_or_symbols.first.first)
                   else
+                    check_block_arity(block)
                     Definition::Simple::BlockMapping.new(hash_or_symbols, block)
                   end
         definition.add_mapping(mapping)
@@ -52,16 +53,26 @@ module DataImport
       end
 
       def after(&block)
+        check_block_arity(block)
         definition.after_blocks << block
       end
 
       def after_row(&block)
+        check_block_arity(block)
         definition.after_row_blocks << block
       end
 
       def validate_row(&block)
+        check_block_arity(block)
         definition.row_validation_blocks << block
       end
+
+      def check_block_arity(block)
+        if block.arity > 0
+          warn "[DEPRECATION] blocks with parameters are deprecated and will be removed in later versions!\n#{caller[1]}"
+        end
+      end
+      private :check_block_arity
 
       def dependencies(*dependencies)
         dependencies.each do |dependency|
