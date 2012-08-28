@@ -1,6 +1,6 @@
 require 'unit/spec_helper'
 
-describe DataImport::Importer do
+describe DataImport::Definition::Simple::Importer do
 
   let(:source) { stub }
   let(:target) { stub }
@@ -10,7 +10,7 @@ describe DataImport::Importer do
   let(:local_context) { stub }
   let(:progress_reporter) { stub }
   before { context.stub(:definition).with('C').and_return(other_definition) }
-  subject { DataImport::Importer.new(context, definition, progress_reporter) }
+  subject { described_class.new(context, definition, progress_reporter) }
 
   describe "#run" do
     let(:reader) { mock }
@@ -127,7 +127,7 @@ describe DataImport::Importer do
     let(:writer) { mock }
 
 
-    subject { DataImport::Importer.new(context, definition, nil) }
+    subject { described_class.new(context, definition, nil) }
 
     describe "#map_row" do
       it 'calls apply for all mappings' do

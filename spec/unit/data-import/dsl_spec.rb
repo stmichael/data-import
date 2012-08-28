@@ -103,6 +103,36 @@ describe DataImport::Dsl do
         subject.import('a') {}
       end
     end
-  end
 
+    describe "#script" do
+      let(:definition) { stub }
+
+      it "adds a new script config to the import" do
+        DataImport::Definition::Script.should_receive(:new).with('Script', nil, nil).and_return(definition)
+        plan.should_receive(:add_definition).with(definition)
+        subject.script('Script') {}
+      end
+
+      it "sets the source and target database in the definition" do
+        subject.stub(:source_database).and_return { :source }
+        subject.stub(:target_database).and_return { :target }
+
+        DataImport::Definition::Script.should_receive(:new).with('a', :source, :target).and_return(definition)
+        plan.should_receive(:add_definition).with(definition)
+
+        subject.script('a') {}
+      end
+
+      it "executes the block in an script conext" do
+        my_block = lambda {}
+        script_dsl = stub
+        DataImport::Definition::Script.should_receive(:new).with(any_args).and_return(definition)
+        plan.should_receive(:add_definition).with(definition)
+        DataImport::Dsl::Script.should_receive(:new).with(definition).and_return(script_dsl)
+
+        script_dsl.should_receive(:instance_eval).with(&my_block)
+        subject.script 'name', &my_block
+      end
+    end
+  end
 end

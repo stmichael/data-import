@@ -1,4 +1,5 @@
 require 'data-import/dsl/import'
+require 'data-import/dsl/script'
 
 module DataImport
   class Dsl
@@ -45,6 +46,13 @@ module DataImport
       @plan.add_definition(definition)
 
       Import.new(definition).instance_eval &block
+    end
+
+    def script(name, &block)
+      definition = DataImport::Definition::Script.new(name, source_database, target_database)
+      @plan.add_definition(definition)
+
+      Script.new(definition).instance_eval &block
     end
 
     def before_filter(&block)

@@ -1,6 +1,8 @@
 require 'data-import/definition/lookup'
 require 'data-import/definition/mappings'
 require 'data-import/definition/simple'
+require 'data-import/definition/simple/importer'
+require 'data-import/definition/script'
 
 module DataImport
   class Definition

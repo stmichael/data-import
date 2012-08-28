@@ -15,7 +15,6 @@ require 'data-import/sequel/writer'
 require 'data-import/sequel/postgres/update_sequence'
 require 'data-import/database'
 require 'data-import/definition'
-require 'data-import/importer'
 require 'data-import/logger'
 
 module DataImport

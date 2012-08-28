@@ -1,6 +1,10 @@
+require 'data-import/dsl/dependencies'
+
 module DataImport
   class Dsl
     class Import
+      include Dependencies
+
       attr_reader :definition
 
       def initialize(definition)
@@ -73,12 +77,6 @@ module DataImport
         end
       end
       private :check_block_arity
-
-      def dependencies(*dependencies)
-        dependencies.each do |dependency|
-          definition.add_dependency(dependency)
-        end
-      end
 
       def lookup_for(*attributes)
         definition.lookup_for(*attributes)
