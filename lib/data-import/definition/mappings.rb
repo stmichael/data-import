@@ -30,6 +30,17 @@ module DataImport
 
     end
 
+    class WildcardBlockMapping
+      def initialize(block)
+        @block = block
+      end
+
+      def apply!(definition, context, row, output_row)
+        local_context = context.build_local_context(:arguments => row)
+        output_row.merge!(local_context.instance_exec(local_context, row, &@block) || {})
+      end
+    end
+
     class ReferenceMapping
       def initialize(referenced_definition, old_foreign_key, new_foreign_key, lookup_name = :id)
         @referenced_definition = referenced_definition
