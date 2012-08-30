@@ -12,19 +12,19 @@ describe "simple mappings" do
       mapping 'sAnimalAge' => 'age'
 
       # Single column block mapping
-      mapping 'compute danger by threat' do
-        rating = ['none', 'medium', 'high'].index(arguments[:strThreat]) + 1
+      mapping 'strThreat' do |context, threat|
+        rating = ['none', 'medium', 'high'].index(threat) + 1
         {:danger_rating => rating}
       end
 
       # Multi column block mapping
-      mapping 'formatted name' do
-        {:formatted_name_cache => "%s (%d)" % [arguments[:strAnimalTitleText], arguments[:sAnimalAge]]}
+      mapping 'strAnimalTitleText', 'sAnimalAge' do |context, title, age|
+        {:formatted_name_cache => "%s (%d)" % [title, age]}
       end
 
       # Wildcard mapping
-      mapping '*' do
-        {:legacy_backup => "ID was #{arguments[:sAnimalID]}"}
+      mapping '*' do |context, row|
+        {:legacy_backup => "ID was #{row[:sAnimalID]}"}
       end
 
       # Conditional mapping

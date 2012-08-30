@@ -92,21 +92,44 @@ describe DataImport::Dsl::Import do
         subject.mapping :a => :b
       end
 
-      let(:block) { lambda{|value|} }
-      it "adds a proc to the mappings" do
-        block_mapping = stub
-        DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a], block).and_return(block_mapping)
-        definition.should_receive(:add_mapping).with(block_mapping)
+      context 'legacy block mappings' do
+        let(:block) { lambda{|value|} }
+        it "adds a proc to the mappings" do
+          block_mapping = stub
+          DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a], block).and_return(block_mapping)
+          definition.should_receive(:add_mapping).with(block_mapping)
 
-        subject.mapping :a, &block
+          subject.mapping :a, &block
+        end
+
+        it "adds a proc with multiple fields to the mappings" do
+          block_mapping = stub
+          DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a, :b], block).and_return(block_mapping)
+          definition.should_receive(:add_mapping).with(block_mapping)
+
+          subject.mapping :a, :b, &block
+        end
+
+        it 'adds a proc with all fields to the mappings' do
+          block_mapping = stub
+          DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:*], block).and_return(block_mapping)
+
+          definition.should_receive(:add_mapping).with(block_mapping)
+
+          subject.mapping :*, &block
+        end
       end
 
-      it "adds a proc with multiple fields to the mappings" do
-        block_mapping = stub
-        DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a, :b], block).and_return(block_mapping)
-        definition.should_receive(:add_mapping).with(block_mapping)
+      context 'wildcard block mappings' do
+        let(:block) { lambda {} }
+        it 'adds a proc with all fields to the mappings' do
+          block_mapping = stub
+          DataImport::Definition::Simple::WildcardBlockMapping.should_receive(:new).with(block).and_return(block_mapping)
 
-        subject.mapping :a, :b, &block
+          definition.should_receive(:add_mapping).with(block_mapping)
+
+          subject.mapping 'my complex mapping', &block
+        end
       end
     end
 
