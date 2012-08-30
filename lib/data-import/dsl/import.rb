@@ -37,6 +37,9 @@ module DataImport
       def mapping(*hash_or_symbols, &block)
         mapping = if hash_or_symbols.first.is_a? Hash
                     Definition::Simple::NameMapping.new(*hash_or_symbols.first.first)
+                  elsif block.arity == 0
+                    check_block_arity(block)
+                    Definition::Simple::WildcardBlockMapping.new(block)
                   else
                     check_block_arity(block)
                     Definition::Simple::BlockMapping.new(hash_or_symbols, block)

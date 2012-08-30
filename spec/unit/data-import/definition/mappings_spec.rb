@@ -75,6 +75,31 @@ describe 'mappings' do
     end
   end
 
+  describe DataImport::Definition::Simple::WildcardBlockMapping do
+    describe '#apply!' do
+      let(:context) { stub }
+      let(:definition) { stub }
+
+      subject { described_class.new(a_block) }
+      let(:a_block) {
+        Proc.new {
+          {:result => "#{arguments[:strSomeName]}#{arguments[:sLegacyID]}#{arguments[:strSomeOtherString]}"}
+        }
+      }
+
+      it 'passes the wole row to the block' do
+        row = {:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'}
+
+        context.should_receive(:build_local_context).
+          with(:arguments => {:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'}).
+          and_return(stub(:arguments => {:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'}))
+
+        subject.apply!(definition, context, row, output_row)
+        output_row.should == {:result => 'John12Jane'}
+      end
+    end
+  end
+
   describe DataImport::Definition::Simple::ReferenceMapping do
     let(:context) { stub }
     let(:definition) { stub }

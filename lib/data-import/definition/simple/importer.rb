@@ -24,8 +24,7 @@ module DataImport
         def map_row(row)
           mapped_row = {}
           @definition.mappings.each do |mapping|
-            local_context = @context.build_local_context(:row => row, :mapped_row => mapped_row)
-            mapping.apply!(@definition, local_context, row, mapped_row)
+            mapping.apply!(@definition, @context, row, mapped_row)
           end
           mapped_row
         end
