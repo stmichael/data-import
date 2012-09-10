@@ -25,8 +25,8 @@ import 'Animals' do
   mapping 'sAnimalID' => 'id'
   mapping 'strAnimalTitleText' => 'name'
   mapping 'sAnimalAge' => 'age'
-  mapping 'strThreat' do |context, threat|
-    rating = ['none', 'medium', 'big'].index(threat) + 1
+  mapping 'convert threat to danger rating' do
+    rating = ['none', 'medium', 'big'].index(arguments[:strThreat]) + 1
     {:danger_rating => rating}
   end
 end
@@ -92,14 +92,30 @@ mapping 'strEmail' => 'email'
 mapping 'strUsername' => 'username'
 ```
 
-If you need to process a column you can add a block. This will pass in the values of the columns you specified after mapping. The return value of the block should be a hash or nil. Nil means no mapping at all and in case of a hash you have to use the column-names of the target-table as keys.
+If you need to process a column you can add a block. You have access to the entire record read from the source database. The return value of the block should be a hash or nil. Nil means no mapping at all and in case of a hash you have to use the column-names of the target-table as keys.
 
 ```ruby
-mapping 'strThreat' do |context, threat|
-  rating = ['none', 'medium', 'big'].index(threat) + 1
+mapping 'convert threat to danger rating' do
+  rating = ['none', 'medium', 'big'].index(arguments[:strThreat]) + 1
   {:danger_rating => rating}
 end
 ```
+
+### Script mappings
+
+If you have a more complex mapping than just reading from one source and writing each record to another, you can define script blocks. Inside a script block you can write ruby code that does your data conversion. You have access to the source and target database to read and write data.
+
+```ruby
+script 'my compex converion' do
+  body do
+    log_texts = source_database.db[:Logger].map {|record| record[:strText]}
+
+    target_database.db[:log].insert(log_texts.join(','))
+  end
+end
+```
+
+`source_database.db` and `target_database.db` are sequel database objects. Look at the [sequel docs](https://github.com/jeremyevans/sequel) for more information.
 
 ### Dependencies
 
@@ -153,12 +169,14 @@ import 'Organizations' do
 end
 
 import 'People' do
-  mapping 'OrganizationCode' do |context, value|
-    # you can then use the previously defined lookup-table on :code to get the primary-key
-    {:org_id => context.definition('Organizations').identify_by(:code, value)}
-  end
+  dependencies 'Organizations'
+
+  # you can then use the previously defined lookup-table on :code to get the primary-key
+  reference 'Organizations', 'OrganizationCode' => :org_id, :lookup => :code
 end
 ```
+
+If you don't specify the option `:lookup` then data-import uses the lookup table called `:id`.
 
 ## Examples
 
