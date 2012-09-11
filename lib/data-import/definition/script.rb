@@ -6,6 +6,10 @@ module DataImport
       def run(context, progress_reporter)
         context.instance_exec &body
       end
+
+      def total_steps_required
+        100
+      end
     end
   end
 end
