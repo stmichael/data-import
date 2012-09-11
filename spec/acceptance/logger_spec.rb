@@ -11,7 +11,7 @@ describe 'logger' do
       mapping 'Gender' => :gender
 
       validate_row do
-        if row[:gender] == 'f'
+        if mapped_row[:gender] == 'f'
           true
         else
           logger.info "Row #{row} skipped since the gender is male"
@@ -43,7 +43,7 @@ describe 'logger' do
 
     DataImport.run_plan!(plan)
 
-    messages.string.strip.should == "Starting to import \"People\"\nRow {:name=>\"Jack\", :gender=>\"m\"} skipped since the gender is male"
+    messages.string.strip.should == "Starting to import \"People\"\nRow {:Name=>\"Jack\", :Gender=>\"m\"} skipped since the gender is male"
   end
 
 end
