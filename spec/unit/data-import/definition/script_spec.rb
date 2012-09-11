@@ -2,7 +2,7 @@ require 'unit/spec_helper'
 
 describe DataImport::Definition::Script do
   let(:source) { stub }
-  let(:target) { stub }
+  let(:target) { mock }
   subject { described_class.new('a', source, target) }
 
   describe '#run' do
@@ -12,6 +12,8 @@ describe DataImport::Definition::Script do
       progress_reporter = stub
       found_name = nil
       subject.body = Proc.new { found_name = name }
+
+      target.should_receive(:transaction).and_yield
 
       subject.run(context, progress_reporter)
       found_name.should == 'ABC'

@@ -34,14 +34,13 @@ describe DataImport::Database do
   end
 
   describe DataImport::Database::Connection do
-    describe "#adapter_scheme" do
-      let(:db) { stub }
-      subject { DataImport::Database::Connection.new(db) }
+    let(:db) { mock }
+    subject { DataImport::Database::Connection.new(db) }
 
-      it "delegates to db" do
-        db.stub(:adapter_scheme => :postgres)
-        subject.adapter_scheme.should == :postgres
-      end
+    it 'decorates the passed in database connection' do
+      db.should_receive(:adapter_scheme)
+
+      subject.adapter_scheme
     end
   end
 end
