@@ -9,8 +9,8 @@ module TestingMacros
 
       instance_eval &block
     end
-    source_database = plan.definitions.first.source_database.db
-    target_database = plan.definitions.first.target_database.db
+    source_database = plan.definitions.first.source_database
+    target_database = plan.definitions.first.target_database
     @source_database = source_database
     @target_database = target_database
 

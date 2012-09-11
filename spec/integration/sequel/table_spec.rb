@@ -6,19 +6,18 @@ describe DataImport::Sequel::Table do
   let(:table_name) { :payments }
 
   before do
-    db = connection.db
-    db.create_table table_name do
+    connection.create_table table_name do
       primary_key :id
       Decimal :amount
       String :description
     end
 
-    db[table_name].insert(:id => 3, :amount => 100)
-    db[table_name].insert(:id => 4, :amount => 67.30)
-    db[table_name].insert(:id => 1002, :amount => 99.99)
-    db[table_name].insert(:id => 1, :amount => 20.95)
-    db[table_name].insert(:id => 5, :amount => 2.60)
-    db[table_name].insert(:id => 2, :amount => 9.90)
+    connection[table_name].insert(:id => 3, :amount => 100)
+    connection[table_name].insert(:id => 4, :amount => 67.30)
+    connection[table_name].insert(:id => 1002, :amount => 99.99)
+    connection[table_name].insert(:id => 1, :amount => 20.95)
+    connection[table_name].insert(:id => 5, :amount => 2.60)
+    connection[table_name].insert(:id => 2, :amount => 9.90)
   end
 
   context 'with a primary key' do

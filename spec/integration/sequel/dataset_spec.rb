@@ -12,27 +12,26 @@ describe DataImport::Sequel::Dataset do
   subject { described_class.new(connection, base_query) }
 
   before do
-    db = connection.db
-    db.create_table :payments do
+    connection.create_table :payments do
       primary_key :id
       Decimal :amount
       Integer :status_id
     end
 
-    db.create_table :payment_status do
+    connection.create_table :payment_status do
       primary_key :id
       String :description
     end
 
-    db[:payment_status].insert(:id => 10, :description => 'open')
-    db[:payment_status].insert(:id => 11, :description => 'processing')
-    db[:payment_status].insert(:id => 12, :description => 'done')
+    connection[:payment_status].insert(:id => 10, :description => 'open')
+    connection[:payment_status].insert(:id => 11, :description => 'processing')
+    connection[:payment_status].insert(:id => 12, :description => 'done')
 
-    db[:payments].insert(:id => 3, :amount => 100, :status_id => 10)
-    db[:payments].insert(:id => 4, :amount => 67.30, :status_id => 12)
-    db[:payments].insert(:id => 1, :amount => 20.95, :status_id => 12)
-    db[:payments].insert(:id => 5, :amount => 2.60, :status_id => 11)
-    db[:payments].insert(:id => 2, :amount => 9.90, :status_id => 10)
+    connection[:payments].insert(:id => 3, :amount => 100, :status_id => 10)
+    connection[:payments].insert(:id => 4, :amount => 67.30, :status_id => 12)
+    connection[:payments].insert(:id => 1, :amount => 20.95, :status_id => 12)
+    connection[:payments].insert(:id => 5, :amount => 2.60, :status_id => 11)
+    connection[:payments].insert(:id => 2, :amount => 9.90, :status_id => 10)
   end
 
   describe '#each_row' do

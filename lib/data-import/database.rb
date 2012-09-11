@@ -19,12 +19,11 @@ module DataImport
     end
 
     class Connection < SimpleDelegator
-      attr_reader :db
       attr_accessor :before_filter
 
-      def initialize(db)
-        super
-        @db = db
+      def db
+        warn "[DEPRECATION] `db` is deprecated and will be removed in later versions! Use sequel methods directly on the connection object instead.\n#{caller[0]}"
+        self
       end
     end
 

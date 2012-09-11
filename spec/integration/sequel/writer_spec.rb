@@ -5,8 +5,7 @@ describe DataImport::Sequel::Writer do
   let(:connection) { DataImport::Database.connect('sqlite:/') }
 
   before do
-    db = connection.db
-    db.create_table :cities do
+    connection.create_table :cities do
       primary_key :id
       String :name
     end
@@ -17,14 +16,14 @@ describe DataImport::Sequel::Writer do
 
     it 'writes a row to the specified table' do
       subject.write_row(:id => 2, :name => 'Switzerland').should == 2
-      connection.db[:cities].to_a.should == [{:id => 2, :name => "Switzerland"}]
+      connection[:cities].to_a.should == [{:id => 2, :name => "Switzerland"}]
     end
 
     it 'works with transactions' do
       subject.transaction do
         subject.write_row(:id => 2, :name => 'Switzerland').should == 2
       end
-      connection.db[:cities].to_a.should have(1).item
+      connection[:cities].to_a.should have(1).item
     end
   end
 
@@ -32,20 +31,19 @@ describe DataImport::Sequel::Writer do
     subject { DataImport::Sequel::UpdateWriter.new(connection, table_name) }
 
     before do
-      db = connection.db
-      db[:cities].insert(:id => 5, :name => 'Schweiz')
+      connection[:cities].insert(:id => 5, :name => 'Schweiz')
     end
 
     it 'writes a row to the specified table' do
       subject.write_row(:id => 5, :name => 'Switzerland').should == 5
-      connection.db[:cities].to_a.should == [{:id => 5, :name => "Switzerland"}]
+      connection[:cities].to_a.should == [{:id => 5, :name => "Switzerland"}]
     end
 
     it 'works with transactions' do
       subject.transaction do
         subject.write_row(:id => 5, :name => 'Switzerland').should == 5
       end
-      connection.db[:cities].to_a.should have(1).item
+      connection[:cities].to_a.should have(1).item
     end
 
 
@@ -61,21 +59,21 @@ describe DataImport::Sequel::Writer do
 
     it 'writes a row to the specified table' do
       subject.write_row(:id => 3, :name => 'Italy').should == 3
-      connection.db[:cities].to_a.should == [{:id => 3, :name => 'Italy'}]
+      connection[:cities].to_a.should == [{:id => 3, :name => 'Italy'}]
     end
 
     it 'works with transactions' do
       subject.transaction do
         subject.write_row(:id => 3, :name => 'Italy').should == 3
       end
-      connection.db[:cities].to_a.should have(1).item
+      connection[:cities].to_a.should have(1).item
     end
 
     it 'doesn\'t write a record if a similar record exists' do
-      connection.db[:cities].insert(:id => 6, :name => 'Spain')
+      connection[:cities].insert(:id => 6, :name => 'Spain')
 
       subject.write_row(:id => 2, :name => 'Spain').should == 6
-      connection.db[:cities].to_a.should have(1).item
+      connection[:cities].to_a.should have(1).item
     end
   end
 
