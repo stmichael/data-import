@@ -15,7 +15,7 @@ module DataImport
         bar = @progress_reporter.new(definition.name, definition.total_steps_required)
 
         DataImport.logger.info "Starting to import \"#{definition.name}\""
-        definition.run(ExecutionContext.new(resolved_plan, definition), bar)
+        definition.run(ExecutionContext.new(resolved_plan, definition, :progress_reporter => bar), bar)
 
         bar.finish
       end
