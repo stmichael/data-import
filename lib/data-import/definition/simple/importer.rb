@@ -31,22 +31,24 @@ module DataImport
 
         def import_row(row)
           mapped_row = map_row(row)
+          before_after_context = @context.build_local_context(:row => row, :mapped_row => mapped_row)
 
-          if row_valid?(mapped_row)
+          if row_valid?(before_after_context)
             new_id = @definition.writer.write_row(mapped_row)
             @definition.row_imported(new_id, row)
 
             @definition.after_row_blocks.each do |block|
-              local_context = @context.build_local_context(:row => row, :mapped_row => mapped_row)
-              local_context.instance_exec(local_context, row, mapped_row, &block)
+              before_after_context.instance_exec(before_after_context, row, mapped_row, &block)
             end
           end
         end
 
-        def row_valid?(row)
+        def row_valid?(before_after_context)
           @definition.row_validation_blocks.all? do |block|
-            local_context = @context.build_local_context(:row => row)
-            local_context.instance_exec(local_context, row, &block)
+            before_after_context.instance_exec(before_after_context,
+                                               before_after_context.row,
+                                               before_after_context.mapped_row,
+                                               &block)
           end
         end
         private :row_valid?

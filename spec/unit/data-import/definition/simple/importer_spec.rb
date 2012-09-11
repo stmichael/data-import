@@ -72,21 +72,30 @@ describe DataImport::Definition::Simple::Importer do
 
       it 'validates data before insertion' do
         validated_rows = []
-        definition.row_validation_blocks << Proc.new do |context, row|
+        validated_mapped_rows = []
+        definition.row_validation_blocks << Proc.new do |context, row, mapped_row|
+          validated_mapped_rows << mapped_row
           validated_rows << row
           true
         end
 
         subject.should_receive(:map_row).with({:id => 1}).and_return({:new_id => 1})
+        local_context.should_receive(:row).and_return({:id => 1})
+        local_context.should_receive(:mapped_row).and_return({:new_id => 1})
         writer.should_receive(:write_row).any_number_of_times
+
         subject.import_row(:id => 1)
-        validated_rows.should == [{:new_id => 1}]
+        validated_mapped_rows.should == [{:new_id => 1}]
+        validated_rows.should == [{:id => 1}]
       end
 
       it 'doesn\'t insert an invalid row' do
         definition.row_validation_blocks << Proc.new { false }
 
+        local_context.should_receive(:row).and_return({:id => 1})
+        local_context.should_receive(:mapped_row).and_return({:new_id => 1})
         writer.should_not_receive(:write_row)
+
         subject.import_row(:id => 1)
       end
     end
@@ -122,7 +131,6 @@ describe DataImport::Definition::Simple::Importer do
                             :writer => writer,
                             :after_row_blocks => [],
                             :row_validation_blocks => []) }
-    let(:context) { stub }
     let(:writer) { mock }
 
 
