@@ -103,7 +103,11 @@ end
 
 ### Script mappings
 
-If you have a more complex mapping than just reading from one source and writing each record to another, you can define script blocks. Inside a script block you can write ruby code that does your data conversion. You have access to the source and target database to read and write data.
+If you have a more complex mapping than just reading from one source
+and writing each record to another, you can define script
+blocks. Inside a script block you can write ruby code that does
+your data conversion. The whole block runs in a transaction to ensure
+consistency.
 
 ```ruby
 script 'my compex converion' do
@@ -115,7 +119,8 @@ script 'my compex converion' do
 end
 ```
 
-`source_database.db` and `target_database.db` are sequel database objects. Look at the [sequel docs](https://github.com/jeremyevans/sequel) for more information.
+`source_database.db` and `target_database.db` are sequel database objects. Look at the
+[sequel docs](https://github.com/jeremyevans/sequel) for more information.
 
 ### Dependencies
 
