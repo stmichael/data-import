@@ -22,7 +22,7 @@ module DataImport
       end
 
       def base_query
-        @base_query_block.call(@connection.db)
+        @base_query_block.call(@connection)
       end
 
       def iterate_dataset(dataset, &block)

@@ -8,7 +8,7 @@ module DataImport
       end
 
       def transaction(&block)
-        @connection.db.transaction(&block)
+        @connection.transaction(&block)
       end
 
       def write_row(row)
@@ -16,7 +16,7 @@ module DataImport
       end
 
       def base_relation
-        @connection.db.from(@table_name)
+        @connection.from(@table_name)
       end
     end
 

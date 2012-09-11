@@ -4,7 +4,7 @@ module DataImport
       module UpdateSequence
         def transaction(&block)
           super
-          @connection.db.reset_primary_key_sequence(@table_name)
+          @connection.reset_primary_key_sequence(@table_name)
         end
       end
     end

@@ -25,7 +25,7 @@ module DataImport
       end
 
       def base_query
-        @connection.db.from(@table_name)
+        @connection.from(@table_name)
       end
 
       def each_row_in_batches(&block)

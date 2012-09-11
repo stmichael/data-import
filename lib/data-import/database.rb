@@ -1,3 +1,4 @@
+require 'delegate'
 require 'sequel'
 
 Sequel.identifier_output_method = :to_s
@@ -17,16 +18,13 @@ module DataImport
       Connection.new(db)
     end
 
-    class Connection
+    class Connection < SimpleDelegator
       attr_reader :db
       attr_accessor :before_filter
 
       def initialize(db)
+        super
         @db = db
-      end
-
-      def adapter_scheme
-        db.adapter_scheme
       end
     end
 
