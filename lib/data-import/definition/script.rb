@@ -4,7 +4,9 @@ module DataImport
       attr_accessor :body
 
       def run(context, progress_reporter)
-        context.instance_exec &body
+        target_database.transaction do
+          context.instance_exec &body
+        end
       end
 
       def total_steps_required

@@ -7,8 +7,8 @@ describe "import without source" do
       to 'objects'
 
       after do
-        target_database.db[:objects].insert(:name => 'a box')
-        target_database.db[:objects].insert(:name => 'my cat')
+        target_database[:objects].insert(:name => 'a box')
+        target_database[:objects].insert(:name => 'my cat')
       end
     end
   end
