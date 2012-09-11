@@ -18,6 +18,7 @@ describe "import with a script" do
         if source_database.db[:tblAnimal].filter(:name => 'Lion').empty?
           target_database.db[:animals].insert(:name => 'Lion', :king => true)
         end
+        progress_reporter.inc 100
       end
     end
   end
