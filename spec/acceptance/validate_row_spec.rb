@@ -10,8 +10,8 @@ describe 'validate rows before insertion' do
       mapping 'Name' => :name
       mapping 'Gender' => :gender
 
-      validate_row do |context, row|
-        row[:gender] == 'f'
+      validate_row do
+        mapped_row[:gender] == 'f'
       end
     end
   end
