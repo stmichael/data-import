@@ -36,8 +36,7 @@ module DataImport
       end
 
       def apply!(definition, context, row, output_row)
-        local_context = context.build_local_context(:arguments => row)
-        output_row.merge!(local_context.instance_exec(local_context, row, &@block) || {})
+        output_row.merge!(context.instance_exec(context, row, &@block) || {})
       end
     end
 

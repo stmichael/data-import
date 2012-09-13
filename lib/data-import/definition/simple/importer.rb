@@ -21,16 +21,17 @@ module DataImport
           end
         end
 
-        def map_row(row)
+        def map_row(context, row)
           mapped_row = {}
           @definition.mappings.each do |mapping|
-            mapping.apply!(@definition, @context, row, mapped_row)
+            mapping.apply!(@definition, context, row, mapped_row)
           end
           mapped_row
         end
 
         def import_row(row)
-          mapped_row = map_row(row)
+          before_context = @context.build_local_context(:row => row)
+          mapped_row = map_row(before_context, row)
           before_after_context = @context.build_local_context(:row => row, :mapped_row => mapped_row)
 
           if row_valid?(before_after_context)

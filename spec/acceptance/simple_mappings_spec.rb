@@ -13,18 +13,18 @@ describe "simple mappings" do
 
       # Single column block mapping
       mapping 'compute danger by threat' do
-        rating = ['none', 'medium', 'high'].index(arguments[:strThreat]) + 1
+        rating = ['none', 'medium', 'high'].index(row[:strThreat]) + 1
         {:danger_rating => rating}
       end
 
       # Multi column block mapping
       mapping 'formatted name' do
-        {:formatted_name_cache => "%s (%d)" % [arguments[:strAnimalTitleText], arguments[:sAnimalAge]]}
+        {:formatted_name_cache => "%s (%d)" % [row[:strAnimalTitleText], row[:sAnimalAge]]}
       end
 
       # Wildcard mapping
       mapping '*' do
-        {:legacy_backup => "ID was #{arguments[:sAnimalID]}"}
+        {:legacy_backup => "ID was #{row[:sAnimalID]}"}
       end
 
       # Conditional mapping

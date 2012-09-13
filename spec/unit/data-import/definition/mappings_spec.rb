@@ -90,9 +90,7 @@ describe 'mappings' do
       it 'passes the wole row to the block' do
         row = {:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'}
 
-        context.should_receive(:build_local_context).
-          with(:arguments => {:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'}).
-          and_return(stub(:arguments => {:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'}))
+        context.should_receive(:arguments).any_number_of_times.and_return({:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'})
 
         subject.apply!(definition, context, row, output_row)
         output_row.should == {:result => 'John12Jane'}
