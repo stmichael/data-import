@@ -107,8 +107,7 @@ describe 'definition dependencies' do
         from 'LegacyCats', :primary_key => 'ID'
         to 'cats'
 
-        mapping 'sOwnerID' do |context, value|
-          context.definition('Owners')
+        mapping 'sOwnerID' do
           definition('Owners')
           {}
         end

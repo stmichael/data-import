@@ -11,38 +11,25 @@ describe "simple mappings" do
       mapping 'strAnimalTitleText' => :name
       mapping 'sAnimalAge' => 'age'
 
-      # Single column block mapping
-      mapping 'compute danger by threat' do
-        rating = ['none', 'medium', 'high'].index(arguments[:strThreat]) + 1
-        {:danger_rating => rating}
-      end
-
-      # Multi column block mapping
       mapping 'formatted name' do
-        {:formatted_name_cache => "%s (%d)" % [arguments[:strAnimalTitleText], arguments[:sAnimalAge]]}
+        {:formatted_name_cache => "%s (%d)" % [row[:strAnimalTitleText], row[:sAnimalAge]]}
       end
 
-      # Wildcard mapping
-      mapping '*' do
-        {:legacy_backup => "ID was #{arguments[:sAnimalID]}"}
-      end
-
-      # Conditional mapping
-      mapping 'strThreat' do |context, threat|
-        if threat == 'high'
+      mapping 'strThreat' do
+        if row[:strThreat] == 'high'
           {:danger_note => 'This animal is dangerous!'}
         end
       end
 
-      after_row do |context, old_row, mapped_row|
-        if old_row[:dteBorn].present?
+      after_row do
+        if row[:dteBorn].present?
           event = '%s was born' % mapped_row[:name]
-          target_database[:animal_logs].insert(:occured_at => old_row[:dteBorn], :event => event)
+          target_database[:animal_logs].insert(:occured_at => row[:dteBorn], :event => event)
         end
 
-        if old_row[:dteDied].present?
+        if row[:dteDied].present?
           event = '%s died' % mapped_row[:name]
-          target_database[:animal_logs].insert(:occured_at => old_row[:dteDied], :event => event)
+          target_database[:animal_logs].insert(:occured_at => row[:dteDied], :event => event)
         end
       end
 
@@ -59,7 +46,6 @@ describe "simple mappings" do
       primary_key :sAnimalID
       String :strAnimalTitleText
       Integer :sAnimalAge
-      Integer :sDangerRating
       String :strThreat
       Date :dteBorn
       Date :dteDied
@@ -68,9 +54,7 @@ describe "simple mappings" do
     target.create_table :animals do
       primary_key :id
       String :name
-      String :legacy_backup
       Integer :age
-      Integer :danger_rating
       String :formatted_name_cache
       String :danger_note
     end
@@ -110,15 +94,9 @@ describe "simple mappings" do
   it 'mapps columns to the new schema' do
     DataImport.run_plan!(plan)
     target_database[:animals].to_a.should == [
-                                              {:id => 1, :name => "Tiger", :age => 23, :danger_note => 'This animal is dangerous!',
-                                                :danger_rating => 3, :formatted_name_cache => 'Tiger (23)',
-                                                :legacy_backup => "ID was 1"},
-                                              {:id => 99, :name => "Cat", :age => 5, :danger_note => nil,
-                                                :danger_rating => 1, :formatted_name_cache => 'Cat (5)',
-                                                :legacy_backup => "ID was 99"},
-                                              {:id => 1293, :name => "Horse", :age => 11, :danger_note => nil,
-                                                :danger_rating => 2, :formatted_name_cache => 'Horse (11)',
-                                                :legacy_backup => "ID was 1293"}
+                                              {:id => 1, :name => "Tiger", :age => 23, :danger_note => 'This animal is dangerous!', :formatted_name_cache => 'Tiger (23)'},
+                                              {:id => 99, :name => "Cat", :age => 5, :danger_note => nil, :formatted_name_cache => 'Cat (5)'},
+                                              {:id => 1293, :name => "Horse", :age => 11, :danger_note => nil, :formatted_name_cache => 'Horse (11)'}
                                              ]
   end
 
