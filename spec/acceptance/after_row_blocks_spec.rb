@@ -9,9 +9,9 @@ describe 'execute code after each row' do
 
       mapping 'slNewLeadsID' => :id
 
-      after_row do |context, old_row, new_row|
-        target_database[:contacts].insert(:firstname => old_row[:slName1],
-                                          :lastname => old_row[:slName2])
+      after_row do
+        target_database[:contacts].insert(:firstname => row[:slName1],
+                                          :lastname => row[:slName2])
       end
     end
   end
