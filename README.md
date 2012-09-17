@@ -26,7 +26,7 @@ import 'Animals' do
   mapping 'strAnimalTitleText' => 'name'
   mapping 'sAnimalAge' => 'age'
   mapping 'convert threat to danger rating' do
-    rating = ['none', 'medium', 'big'].index(arguments[:strThreat]) + 1
+    rating = ['none', 'medium', 'big'].index(row[:strThreat]) + 1
     {:danger_rating => rating}
   end
 end
@@ -82,6 +82,89 @@ import 'Users' do
   to 'users'
 ```
 
+#### Data source
+
+In simple cases you would read from one table and write to another.
+
+```ruby
+import 'Items' do
+  from 'tblItem'
+  to 'items'
+end
+```
+
+This is not always sufficient. This gem allows you to specify a custom
+data source using the
+[sequel syntax](https://github.com/jeremyevans/sequel) or plain SQL.
+
+```ruby
+import 'Items' do
+  from 'items' do |sequel|
+    sequel[:tblItems].join(:tblOrderItems, :sItemID => :sID)
+  end
+  to 'items'
+end
+```
+
+or
+
+```ruby
+import 'Items' do
+  from 'items' do |sequel|
+    sequel[<<-SQL
+SELECT *
+FROM tblItems
+INNER JOIN tblOrderItems ON tblOrderItems.sItemID = tblItems.sID
+SQL
+          ]
+    sequel[:tblItems].join(:tblOrderItems, :sItemID => :sID)
+  end
+  to 'items'
+end
+```
+
+#### Data output
+
+By default a new record will be inserted for record read from the
+source. This behaviour can be changed. For example you may want to
+update existing records.
+
+```ruby
+import 'Article Authors' do
+  from 'tblArticleAbout', :primary_key => 'sID'
+  to 'articles', :mode => :update
+
+  mapping 'lArticleId' => 'id'
+  mapping 'strWho' => 'author'
+end
+```
+
+With `:mode => :update` you tell data-import to update a record
+instead of inserting a new one. You have to specify a mapping for the
+primary key of the target table. If there is no value for the primary
+key then nothing will be updated.
+
+There is also a unique writer to filter double records.
+
+```ruby
+import 'Cities' do
+  from 'tblCities', :primary_key => 'sID'
+  to 'cities', :mode => [:unique, :columns => [:name, :zip]]
+
+  mapping 'strName' => 'name'
+  mapping 'sZip' => 'zip'
+  mapping 'strShort' => 'short_name'
+end
+```
+
+Passing the option `:mode => [:unique, :columns => [:name, :zip]]`
+makes data-import use a unique writer. `:columns` must be an array of
+column which will be used to identify a double record. Before a new
+record will be inserted, data-import makes a select on the target
+table with the defined columns. So depending on the size of your
+table, you may consider adding an (unique) index on those columns to
+speed up the import.
+
 #### Column-Mappings ####
 
 You can create simple name-mappings with a call to `mapping`:
@@ -96,10 +179,72 @@ If you need to process a column you can add a block. You have access to the enti
 
 ```ruby
 mapping 'convert threat to danger rating' do
-  rating = ['none', 'medium', 'big'].index(arguments[:strThreat]) + 1
+  rating = ['none', 'medium', 'big'].index(row[:strThreat]) + 1
   {:danger_rating => rating}
 end
 ```
+
+#### Seed data
+
+If you have static data that needs to be inserted you can used to
+following feature:
+
+```ruby
+import 'managers' do
+  from 'tblManagers'
+  to 'managers'
+
+  seed :earns_much_money => true, :has_emplyees => true
+end
+```
+
+#### After row blocks
+
+Use after row blocks to specify some logic that will be executed after
+a row has been inserted.
+
+```ruby
+import 'Sales Leads' do
+  from 'SL_NewLeads', :primary_key => 'slNewLeadsID'
+  to 'sales_leads'
+
+  mapping 'slNewLeadsID' => :id
+
+  after_row do
+    target_database[:contacts].insert(:firstname => row[:slName1],
+                                      :lastname => row[:slName2])
+  end
+end
+```
+
+#### Row validation
+
+Rows can be validated before insertion.
+
+```ruby
+import 'People' do
+  from 'Person'
+  to 'females'
+
+  mapping 'Name' => :name
+  mapping 'Gender' => :gender
+
+  validate_row do
+    if mapped_row[:gender] == 'f'
+      true
+    else
+      logger.info "Row #{row} skipped since the gender is male"
+      false
+    end
+  end
+end
+```
+
+Inside the validation block you have access to the row read from the
+data source (`row`) and to the row with all mappings applied
+(`mapped_row`). If the result of the validation block is evaluated to
+true, then the row will be inserted into the target table. If the
+result is false, insertion will be skipped.
 
 ### Script mappings
 
@@ -178,14 +323,60 @@ import 'People' do
 
   # you can then use the previously defined lookup-table on :code to get the primary-key
   reference 'Organizations', 'OrganizationCode' => :org_id, :lookup => :code
+
+  # or you can do the same thing manually (this also works in script blocks)
+  mapping 'organization code' do
+    {:org_id => definition('Organizations').identify_by(:code, row['strCode'])}
+  end
 end
 ```
 
-If you don't specify the option `:lookup` then data-import uses the lookup table called `:id`.
+If you don't specify the option `:lookup` then data-import uses the
+lookup table called `:id`.
+
+### Logger
+
+In every block, be this mapping, after_row, script body, validation, etc.,
+you have access to a logger, which can be accessed as follows:
+
+```ruby
+import 'Animals' do
+  # source and target config
+
+  # mapping config
+
+  validate_row do
+    logger.info "animal name has been mapped from #{row[:strName]} to #{mapped_row[:name]}"
+  end
+end
+```
+
+The logger supports the standard log levels debug, info, warn, error
+and fatal.
+
+This gem supports two different kinds of logging. The full logger
+prints every bit information. By default this will be printed to a
+file called import.log in the project root. The important logger only
+prints messages of levels warn, error or fatal, which will be
+displayed on STDOUT be default. The file import.log will therefore
+hold every message you log in the data migration process. On STDOUT
+will only see severe messages beside the progress bar. The reason for
+this distinction is that you don't want STDOUT to be flooded by debug
+messages.
+
+Full and important logger can be configured as follows:
+
+```ruby
+DataImport.full_logger = Logger.new(STDOUT)
+DataImport.important_logger = Logger.new(STDERR)
+```
+
+You can apply any object that provides the methods `debug`, `info`,
+`warn`, `error` and `fatal`.
 
 ## Examples
 
-you can learn a lot from the [integration specs](https://github.com/garaio/data-import/tree/master/spec/integration).
+you can learn a lot from the [acceptance specs](https://github.com/stmichael/data-import/tree/master/spec/acceptance).
 
 ## Community
 
