@@ -1,4 +1,4 @@
-require 'data-import'
+require 'acceptance/spec_helper'
 
 describe "lookup tables" do
 
@@ -19,11 +19,11 @@ describe "lookup tables" do
       dependencies 'Articles'
 
       mapping 'sPostId' => :id
-      mapping 'sArticleId' do |context, value|
-        { :article_id => context.definition('Articles').identify_by(:sArticleId, value) }
+      mapping 'sArticleId' do
+        { :article_id => definition('Articles').identify_by(:sArticleId, row[:sArticleId]) }
       end
-      mapping 'strArticleRef' do |context, value|
-        { :similar_article_id => context.definition('Articles').identify_by(:reference, value) }
+      mapping 'strArticleRef' do
+        { :similar_article_id => definition('Articles').identify_by(:reference, row[:strArticleRef]) }
       end
     end
   end
