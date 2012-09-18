@@ -42,4 +42,24 @@ describe 'multiple configuration files' do
       car_target[:cars].to_a.should == [{:manufacturer_id => 1, :name => 'Testarossa'}]
     end
   end
+
+  context 'without a source database' do
+    let(:config_files) { File.join(File.dirname(__FILE__), 'multiple_config_files_mappings', 'cars_without_source.rb') }
+
+    it 'raises an exception' do
+      lambda do
+        DataImport::Dsl.evaluate_import_config(config_files)
+      end.should raise_error(DataImport::MissingDatabaseError)
+    end
+  end
+
+  context 'without a target database' do
+    let(:config_files) { File.join(File.dirname(__FILE__), 'multiple_config_files_mappings', 'cars_without_target.rb') }
+
+    it 'raises an exception' do
+      lambda do
+        DataImport::Dsl.evaluate_import_config(config_files)
+      end.should raise_error(DataImport::MissingDatabaseError)
+    end
+  end
 end

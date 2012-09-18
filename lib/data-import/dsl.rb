@@ -28,10 +28,16 @@ module DataImport
 
     end
 
-    attr_reader :source_database, :target_database
-
     def initialize(plan)
       @plan = plan
+    end
+
+    def source_database
+      @source_database || raise(MissingDatabaseError.new('source', caller[1]))
+    end
+
+    def target_database
+      @target_database || raise(MissingDatabaseError.new('target', caller[1]))
     end
 
     def source(*args)

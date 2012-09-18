@@ -65,6 +65,9 @@ describe DataImport::Dsl do
 
     describe "#import" do
       it "adds a new import config to the import" do
+        subject.stub(:source_database).and_return { nil }
+        subject.stub(:target_database).and_return { nil }
+
         definition = stub(:reader= => true)
         DataImport::Definition::Simple.should_receive(:new).with('Import 5', nil, nil).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
@@ -82,7 +85,10 @@ describe DataImport::Dsl do
         subject.import('a') {}
       end
 
-      it "executes the block in an import conext" do
+      it "executes the block in an import context" do
+        subject.stub(:source_database).and_return { nil }
+        subject.stub(:target_database).and_return { nil }
+
         my_block = lambda {}
         import_dsl = stub
         definition = stub(:reader= => true)
@@ -95,6 +101,9 @@ describe DataImport::Dsl do
       end
 
       it "sets a null reader by default" do
+        subject.stub(:source_database).and_return { nil }
+        subject.stub(:target_database).and_return { nil }
+
         definition = stub
         DataImport::Definition::Simple.should_receive(:new).with(any_args).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
@@ -108,6 +117,9 @@ describe DataImport::Dsl do
       let(:definition) { stub }
 
       it "adds a new script config to the import" do
+        subject.stub(:source_database).and_return { nil }
+        subject.stub(:target_database).and_return { nil }
+
         DataImport::Definition::Script.should_receive(:new).with('Script', nil, nil).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
         subject.script('Script') {}
@@ -124,6 +136,9 @@ describe DataImport::Dsl do
       end
 
       it "executes the block in an script conext" do
+        subject.stub(:source_database).and_return { nil }
+        subject.stub(:target_database).and_return { nil }
+
         my_block = lambda {}
         script_dsl = stub
         DataImport::Definition::Script.should_receive(:new).with(any_args).and_return(definition)
