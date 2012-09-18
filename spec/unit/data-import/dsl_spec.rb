@@ -68,7 +68,7 @@ describe DataImport::Dsl do
         subject.stub(:source_database).and_return { nil }
         subject.stub(:target_database).and_return { nil }
 
-        definition = stub(:reader= => true)
+        definition = stub
         DataImport::Definition::Simple.should_receive(:new).with('Import 5', nil, nil).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
         subject.import('Import 5') {}
@@ -78,7 +78,7 @@ describe DataImport::Dsl do
         subject.stub(:source_database).and_return { :source }
         subject.stub(:target_database).and_return { :target }
 
-        definition = stub(:reader= => true)
+        definition = stub
         DataImport::Definition::Simple.should_receive(:new).with('a', :source, :target).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
 
@@ -91,25 +91,13 @@ describe DataImport::Dsl do
 
         my_block = lambda {}
         import_dsl = stub
-        definition = stub(:reader= => true)
+        definition = stub
         DataImport::Definition::Simple.should_receive(:new).with(any_args).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
         DataImport::Dsl::Import.should_receive(:new).with(definition).and_return(import_dsl)
 
         import_dsl.should_receive(:instance_eval).with(&my_block)
         subject.import 'name', &my_block
-      end
-
-      it "sets a null reader by default" do
-        subject.stub(:source_database).and_return { nil }
-        subject.stub(:target_database).and_return { nil }
-
-        definition = stub
-        DataImport::Definition::Simple.should_receive(:new).with(any_args).and_return(definition)
-        plan.should_receive(:add_definition).with(definition)
-        definition.should_receive(:reader=).with(kind_of(DataImport::Sequel::NullReader))
-
-        subject.import('a') {}
       end
     end
 
