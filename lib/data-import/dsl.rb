@@ -5,10 +5,12 @@ module DataImport
   class Dsl
     class << self
 
-      def evaluate_import_config(file)
+      def evaluate_import_config(files)
         plan = DataImport::ExecutionPlan.new
-        context = new(plan)
-        context.instance_eval read_import_config(file), file
+        Array(files).each do |file|
+          context = new(plan)
+          context.instance_eval read_import_config(file), file
+        end
         plan
       end
 
