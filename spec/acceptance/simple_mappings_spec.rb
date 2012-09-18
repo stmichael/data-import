@@ -32,12 +32,6 @@ describe "simple mappings" do
           target_database[:animal_logs].insert(:occured_at => row[:dteDied], :event => event)
         end
       end
-
-      after do
-        target_database[:danger_ratings].insert(:id => 1, :description => 'none')
-        target_database[:danger_ratings].insert(:id => 2, :description => 'medium')
-        target_database[:danger_ratings].insert(:id => 3, :description => 'high')
-      end
     end
   end
 
@@ -63,11 +57,6 @@ describe "simple mappings" do
       primary_key :id
       Date :occured_at
       String :event
-    end
-
-    target.create_table :danger_ratings do
-      primary_key :id
-      String :description
     end
 
 
@@ -98,13 +87,6 @@ describe "simple mappings" do
                                               {:id => 99, :name => "Cat", :age => 5, :danger_note => nil, :formatted_name_cache => 'Cat (5)'},
                                               {:id => 1293, :name => "Horse", :age => 11, :danger_note => nil, :formatted_name_cache => 'Horse (11)'}
                                              ]
-  end
-
-  it 'runs after blocks after the rows were imported' do
-    DataImport.run_plan!(plan)
-    target_database[:danger_ratings].to_a.should == [{:id => 1, :description => 'none'},
-                                                     {:id => 2, :description => 'medium'},
-                                                     {:id => 3, :description => 'high'}]
   end
 
   it 'runs after_row blocks after every row' do
