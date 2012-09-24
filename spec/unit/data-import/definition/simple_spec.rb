@@ -24,11 +24,10 @@ describe DataImport::Definition::Simple do
 
   describe '#run' do
     it 'executes the definition and displays the progress' do
-      progress_reporter = stub
       importer = mock
-      DataImport::Definition::Simple::Importer.should_receive(:new).with('CONTEXT', subject, progress_reporter).and_return(importer)
+      DataImport::Definition::Simple::Importer.should_receive(:new).with('CONTEXT', subject).and_return(importer)
       importer.should_receive(:run)
-      subject.run('CONTEXT', progress_reporter)
+      subject.run('CONTEXT')
     end
   end
 end

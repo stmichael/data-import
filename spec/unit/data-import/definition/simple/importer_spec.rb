@@ -6,17 +6,10 @@ describe DataImport::Definition::Simple::Importer do
   let(:target) { stub }
   let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target }
   let(:definition) { DataImport::Definition::Simple.new 'A', source, target }
-  let(:context) { stub(:name => 'A') }
-  let(:before_context) { stub('context before mapping') }
-  let(:after_context) { stub('context after mapping') }
-  let(:progress_reporter) { stub }
+  let(:progress_reporter) { mock('ProgressReporter') }
+  let(:context) { mock('Context', :name => 'A', :progress_reporter => progress_reporter) }
   before { context.stub(:definition).with('C').and_return(other_definition) }
-  subject { described_class.new(context, definition, progress_reporter) }
-
-  before do
-    context.stub(:build_local_context).with(hash_including(:row)).and_return(before_context)
-    context.stub(:build_local_context).with(hash_including(:row, :mapped_row)).and_return(after_context)
-  end
+  subject { described_class.new(context, definition) }
 
   describe "#run" do
     let(:reader) { mock }
@@ -85,9 +78,7 @@ describe DataImport::Definition::Simple::Importer do
           true
         end
 
-        subject.should_receive(:map_row).with(before_context, {:id => 1}).and_return({:new_id => 1})
-        after_context.should_receive(:row).and_return({:id => 1})
-        after_context.should_receive(:mapped_row).and_return({:new_id => 1})
+        subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 1}).and_return({:new_id => 1})
         writer.should_receive(:write_row).any_number_of_times
 
         subject.import_row(:id => 1)
@@ -98,8 +89,6 @@ describe DataImport::Definition::Simple::Importer do
       it 'doesn\'t insert an invalid row' do
         definition.row_validation_blocks << Proc.new { false }
 
-        after_context.should_receive(:row).and_return({:id => 1})
-        after_context.should_receive(:mapped_row).and_return({:new_id => 1})
         writer.should_not_receive(:write_row)
 
         subject.import_row(:id => 1)
@@ -118,8 +107,8 @@ describe DataImport::Definition::Simple::Importer do
         output_rows << output_row
       end
 
-      subject.should_receive(:map_row).with(before_context, {:id => 1}).and_return({:new_id => 1})
-      subject.should_receive(:map_row).with(before_context, {:id => 2}).and_return({:new_id => 2})
+      subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 1}).and_return({:new_id => 1})
+      subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 2}).and_return({:new_id => 2})
       writer.should_receive(:write_row).any_number_of_times
       subject.import_row(:id => 1)
       subject.import_row(:id => 2)
@@ -140,14 +129,14 @@ describe DataImport::Definition::Simple::Importer do
     let(:writer) { mock }
 
 
-    subject { described_class.new(context, definition, nil) }
+    subject { described_class.new(context, definition) }
 
     describe "#map_row" do
       it 'calls apply for all mappings' do
         legacy_row = {:legacy_id => 1, :legacy_name => 'hans'}
-        id_mapping.should_receive(:apply!).with(definition, before_context, legacy_row, {})
-        name_mapping.should_receive(:apply!).with(definition, before_context, legacy_row, {})
-        subject.map_row(before_context, legacy_row).should == {}
+        id_mapping.should_receive(:apply!).with(definition, context, legacy_row, {})
+        name_mapping.should_receive(:apply!).with(definition, context, legacy_row, {})
+        subject.map_row(context, legacy_row).should == {}
       end
     end
 
