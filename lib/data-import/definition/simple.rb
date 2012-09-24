@@ -26,8 +26,8 @@ module DataImport
         @mappings << mapping
       end
 
-      def run(context, progress_reporter)
-        Importer.new(context, self, progress_reporter).run
+      def run(context)
+        Importer.new(context, self).run
       end
 
       def total_steps_required
