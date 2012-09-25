@@ -13,6 +13,25 @@ describe "lookup tables" do
       mapping 'strRef' => 'slug'
     end
 
+    script 'Mark ruby article' do
+      dependencies 'Articles'
+
+      body do
+        new_id = target_database.db[:articles].insert(:slug => definition('Articles').identify_by(:reference, 'ruby-is-awesome'))
+
+        definition('Mark ruby article').lookup_for(:sArticleId)
+        definition('Mark ruby article').row_imported(new_id, {:sArticleId => 0})
+      end
+    end
+
+    script 'Post about double ruby article' do
+      dependencies 'Mark ruby article'
+
+      body do
+        target_database.db[:posts].insert(:id => 11, :article_id => definition('Mark ruby article').identify_by(:sArticleId, 0))
+      end
+    end
+
     import 'Posts' do
       from 'tblPosts', :primary_key => 'sPostId'
       to 'posts'
@@ -26,6 +45,7 @@ describe "lookup tables" do
         { :similar_article_id => definition('Articles').identify_by(:reference, row[:strArticleRef]) }
       end
     end
+
   end
 
   database_setup do
@@ -69,12 +89,13 @@ describe "lookup tables" do
 
   end
 
-  it 'mapps columns to the new schema' do
+  it 'maps columns to the new schema' do
     DataImport.run_plan!(plan)
     target_database[:posts].to_a.should == [{:id => 7, :article_id => 2, :similar_article_id => 1},
                                             {:id => 8, :article_id => 1, :similar_article_id => 2},
                                             {:id => 9, :article_id => 2, :similar_article_id => 1},
-                                            {:id => 10, :article_id => nil, :similar_article_id => nil}]
+                                            {:id => 10, :article_id => nil, :similar_article_id => nil},
+                                            {:id => 11, :article_id => 4, :similar_article_id => nil}]
   end
 
 end
