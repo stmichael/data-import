@@ -33,4 +33,14 @@ module DataImport
     end
   end
 
+  class MissingDatabaseError < RuntimeError
+    MESSAGE = <<-ERROR
+      you didn't specify a %s database in the mapping file %s
+ERROR
+
+    def initialize(*args)
+      super(MESSAGE % args)
+    end
+  end
+
 end

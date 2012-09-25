@@ -5,10 +5,12 @@ module DataImport
   class Dsl
     class << self
 
-      def evaluate_import_config(file)
+      def evaluate_import_config(files)
         plan = DataImport::ExecutionPlan.new
-        context = new(plan)
-        context.instance_eval read_import_config(file), file
+        Array(files).each do |file|
+          context = new(plan)
+          context.instance_eval read_import_config(file), file
+        end
         plan
       end
 
@@ -26,10 +28,16 @@ module DataImport
 
     end
 
-    attr_reader :source_database, :target_database
-
     def initialize(plan)
       @plan = plan
+    end
+
+    def source_database
+      @source_database || raise(MissingDatabaseError.new('source', caller[1]))
+    end
+
+    def target_database
+      @target_database || raise(MissingDatabaseError.new('target', caller[1]))
     end
 
     def source(*args)
