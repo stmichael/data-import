@@ -60,6 +60,7 @@ module DataImport
       end
 
       def after(&block)
+        warn "[DEPRECATION] after blocks are deprecated and will be removed in later versions! Use script blocks with dependencies instead.\n#{caller[0]}"
         check_block_arity(block)
         definition.after_blocks << block
       end

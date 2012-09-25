@@ -50,7 +50,6 @@ module DataImport
 
     def import(name, &block)
       definition = DataImport::Definition::Simple.new(name, source_database, target_database)
-      definition.reader = DataImport::Sequel::NullReader.new
       @plan.add_definition(definition)
 
       Import.new(definition).instance_eval &block
