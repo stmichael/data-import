@@ -1,8 +1,11 @@
-class ExecutionContext < OpenStruct
-  def initialize(execution_plan, definition, values = {})
-    super(values)
+class ExecutionContext
+
+  attr_reader :progress_reporter
+
+  def initialize(execution_plan, definition, progress_reporter)
     @execution_plan = execution_plan
     @definition = definition
+    @progress_reporter = progress_reporter
   end
 
   def logger
@@ -25,7 +28,15 @@ class ExecutionContext < OpenStruct
     @definition.target_database
   end
 
-  def build_local_context(values)
-    self.class.new(@execution_plan, @definition, values)
+  class Proxy
+    def initialize(context)
+      @context = context
+    end
+
+    [:logger, :definition, :name, :source_database, :target_database].each do |method_symbol|
+      define_method method_symbol do |*args|
+        @context.send(method_symbol, *args)
+      end
+    end
   end
 end

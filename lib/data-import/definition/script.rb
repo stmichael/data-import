@@ -3,7 +3,7 @@ module DataImport
     class Script < Definition
       attr_accessor :body
 
-      def run(context, progress_reporter)
+      def run(context)
         target_database.transaction do
           context.instance_exec &body
         end
