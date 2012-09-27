@@ -1,14 +1,17 @@
 require 'data-import/dsl/dependencies'
+require 'data-import/dsl/lookup'
 
 module DataImport
   class Dsl
     class Import
       include Dependencies
+      include Lookup
 
       attr_reader :definition
 
-      def initialize(definition)
+      def initialize(definition, id_mapping_container)
         @definition = definition
+        @id_mapping_container = id_mapping_container
       end
 
       def from(table_name = nil, options = {}, &block)
@@ -81,10 +84,6 @@ module DataImport
         end
       end
       private :check_block_arity
-
-      def lookup_for(*attributes)
-        definition.lookup_for(*attributes)
-      end
 
     end
   end

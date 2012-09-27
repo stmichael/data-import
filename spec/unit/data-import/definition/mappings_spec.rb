@@ -108,9 +108,9 @@ describe 'mappings' do
       it 'sets the foreign key to the newly generated primary key' do
         row = {:sLegacyAddressId => 28}
 
-        address_definition = stub
-        context.should_receive(:definition).with('OldAddress').and_return(address_definition)
-        address_definition.should_receive(:identify_by).with(:reference, 28).and_return(4)
+        id_mapping = stub
+        context.should_receive(:id_mapping_for).with('OldAddress', :reference).and_return(id_mapping)
+        id_mapping.should_receive(:lookup).with(28).and_return(4)
 
         subject.apply!(definition, context, row, output_row)
         output_row.should == {:address_id => 4}
@@ -123,9 +123,9 @@ describe 'mappings' do
       it 'uses :id to look up the newly generated id' do
         row = {:sLegacyAddressId => 28}
 
-        address_definition = stub
-        context.should_receive(:definition).with('OldAddress').and_return(address_definition)
-        address_definition.should_receive(:identify_by).with(:id, 28)
+        id_mapping = stub
+        context.should_receive(:id_mapping_for).with('OldAddress', :id).and_return(id_mapping)
+        id_mapping.should_receive(:lookup).with(28)
 
         subject.apply!(definition, context, row, output_row)
       end

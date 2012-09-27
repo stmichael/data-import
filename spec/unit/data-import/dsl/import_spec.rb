@@ -5,8 +5,9 @@ describe DataImport::Dsl::Import do
   let(:source) { stub(:adapter_scheme => 'sqlite') }
   let(:target) { stub }
 
-  let(:definition) { DataImport::Definition::Simple.new('d', source, target) }
-  subject { DataImport::Dsl::Import.new(definition) }
+  let(:container) { stub }
+  let(:definition) { DataImport::Definition::Simple.new('d', source, target, container) }
+  subject { DataImport::Dsl::Import.new(definition, container) }
 
   describe "#from" do
     context 'when a table-name is passed' do
@@ -163,6 +164,31 @@ describe DataImport::Dsl::Import do
     validation_block = lambda {}
     subject.validate_row &validation_block
     definition.row_validation_blocks.should == [validation_block]
+  end
+
+  describe 'lookups' do
+    let(:dictionary) { stub }
+
+    it 'defines an id mapping' do
+      DataImport::Dictionary.should_receive(:new).and_return(dictionary)
+      container.should_receive(:add_dictionary).with('d', :name, :strName, dictionary)
+
+      subject.lookup_for :name, :column => :strName
+    end
+
+    it 'defines an id mapping without explicitly setting the column' do
+      DataImport::Dictionary.should_receive(:new).and_return(dictionary)
+      container.should_receive(:add_dictionary).with('d', :name, :name, dictionary)
+
+      subject.lookup_for :name
+    end
+
+    it 'defines an case insensitive id mapping' do
+      DataImport::CaseIgnoringDictionary.should_receive(:new).and_return(dictionary)
+      container.should_receive(:add_dictionary).with('d', :name, :name, dictionary)
+
+      subject.lookup_for :name, :ignore_case => true
+    end
   end
 
 end

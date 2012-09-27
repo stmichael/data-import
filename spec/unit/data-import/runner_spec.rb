@@ -11,9 +11,9 @@ describe DataImport::Runner do
   end
 
   context 'with simple definitions' do
-    let(:people) { DataImport::Definition.new('People', 'tblPerson', 'people') }
-    let(:animals) { DataImport::Definition.new('Animals', 'tblAnimal', 'animals') }
-    let(:articles) { DataImport::Definition.new('Articles', 'tblNewsMessage', 'articles') }
+    let(:people) { DataImport::Definition.new('People', 'tblPerson', 'people', nil) }
+    let(:animals) { DataImport::Definition.new('Animals', 'tblAnimal', 'animals', nil) }
+    let(:articles) { DataImport::Definition.new('Articles', 'tblNewsMessage', 'articles', nil) }
     let(:plan) { DataImport::ExecutionPlan.new }
     before do
       plan.add_definition(articles)

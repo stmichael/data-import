@@ -7,7 +7,8 @@ describe DataImport::DependencyResolver do
   let(:a) { stub('A', :name => 'A', :dependencies => []) }
   let(:b) { stub('B', :name => 'B', :dependencies => ['A']) }
   let(:c) { stub('C', :name => 'C', :dependencies => ['A', 'B']) }
-  let(:plan) { DataImport::ExecutionPlan.new([a, b, c]) }
+  let(:container) { stub }
+  let(:plan) { DataImport::ExecutionPlan.new([a, b, c], container) }
   subject { DataImport::DependencyResolver.new(plan, strategy) }
 
   let(:graph) {
@@ -28,7 +29,7 @@ describe DataImport::DependencyResolver do
     plan
 
     resolved_plan = mock
-    DataImport::ExecutionPlan.should_receive(:new).with([a, b]).and_return(resolved_plan)
+    DataImport::ExecutionPlan.should_receive(:new).with([a, b], container).and_return(resolved_plan)
     subject.resolve.should == resolved_plan
   end
 

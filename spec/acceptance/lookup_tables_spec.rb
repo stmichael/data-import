@@ -16,11 +16,12 @@ describe "lookup tables" do
     script 'Mark ruby article' do
       dependencies 'Articles'
 
-      body do
-        new_id = target_database.db[:articles].insert(:slug => definition('Articles').identify_by(:reference, 'ruby-is-awesome'))
+      lookup_for :sArticleId
 
-        definition('Mark ruby article').lookup_for(:sArticleId)
-        definition('Mark ruby article').row_imported(new_id, {:sArticleId => 0})
+      body do
+        new_id = target_database.db[:articles].insert(:slug => id_mapping_for('Articles', :reference).lookup('ruby-is-awesome'))
+
+        id_mapping_for('Mark ruby article', :sArticleId).add(0, new_id)
       end
     end
 
@@ -28,7 +29,7 @@ describe "lookup tables" do
       dependencies 'Mark ruby article'
 
       body do
-        target_database.db[:posts].insert(:id => 11, :article_id => definition('Mark ruby article').identify_by(:sArticleId, 0))
+        target_database.db[:posts].insert(:id => 11, :article_id => id_mapping_for('Mark ruby article', :sArticleId).lookup(0))
       end
     end
 
@@ -39,10 +40,10 @@ describe "lookup tables" do
 
       mapping 'sPostId' => :id
       mapping 'sArticleId' do
-        { :article_id => definition('Articles').identify_by(:sArticleId, row[:sArticleId]) }
+        { :article_id => id_mapping_for('Articles', :sArticleId).lookup(row[:sArticleId]) }
       end
       mapping 'strArticleRef' do
-        { :similar_article_id => definition('Articles').identify_by(:reference, row[:strArticleRef]) }
+        { :similar_article_id => id_mapping_for('Articles', :reference).lookup(row[:strArticleRef]) }
       end
     end
 

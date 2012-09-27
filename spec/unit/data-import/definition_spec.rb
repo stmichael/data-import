@@ -2,7 +2,7 @@ require 'unit/spec_helper'
 
 describe DataImport::Definition do
 
-  subject { DataImport::Definition.new('a', :source, :target) }
+  subject { DataImport::Definition.new('a', :source, :target, nil) }
 
   it 'executes in 1 step' do
     subject.total_steps_required.should == 1

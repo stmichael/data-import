@@ -4,8 +4,9 @@ describe DataImport::Dsl::Script do
 
   let(:source) { stub }
   let(:target) { stub }
-  let(:definition) { DataImport::Definition::Script.new('s', source, target) }
-  subject { described_class.new(definition) }
+  let(:container) { stub }
+  let(:definition) { DataImport::Definition::Script.new('s', source, target, container) }
+  subject { described_class.new(definition, container) }
 
   describe "#dependencies" do
     it "sets the list of definitions it depends on" do
@@ -30,4 +31,28 @@ describe DataImport::Dsl::Script do
     end
   end
 
+  describe 'lookups' do
+    let(:dictionary) { stub }
+
+    it 'defines an id mapping' do
+      DataImport::Dictionary.should_receive(:new).and_return(dictionary)
+      container.should_receive(:add_dictionary).with('s', :name, :strName, dictionary)
+
+      subject.lookup_for :name, :column => :strName
+    end
+
+    it 'defines an id mapping without explicitly setting the column' do
+      DataImport::Dictionary.should_receive(:new).and_return(dictionary)
+      container.should_receive(:add_dictionary).with('s', :name, :name, dictionary)
+
+      subject.lookup_for :name
+    end
+
+    it 'defines an case insensitive id mapping' do
+      DataImport::CaseIgnoringDictionary.should_receive(:new).and_return(dictionary)
+      container.should_receive(:add_dictionary).with('s', :name, :name, dictionary)
+
+      subject.lookup_for :name, :ignore_case => true
+    end
+  end
 end

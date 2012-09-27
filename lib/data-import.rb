@@ -5,6 +5,7 @@ require 'active_support/all'
 
 require "data-import/version"
 require "data-import/errors"
+require 'data-import/dictionary'
 require 'data-import/dependency_resolver'
 require 'data-import/execution_context'
 require 'data-import/runner'

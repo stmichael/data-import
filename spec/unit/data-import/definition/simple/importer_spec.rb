@@ -4,8 +4,9 @@ describe DataImport::Definition::Simple::Importer do
 
   let(:source) { stub }
   let(:target) { stub }
-  let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target }
-  let(:definition) { DataImport::Definition::Simple.new 'A', source, target }
+  let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target, nil }
+  let(:dictionary) { stub }
+  let(:definition) { DataImport::Definition::Simple.new 'A', source, target, dictionary }
   let(:progress_reporter) { mock('ProgressReporter') }
   let(:context) { mock('Context', :name => 'A', :progress_reporter => progress_reporter) }
   before { context.stub(:definition).with('C').and_return(other_definition) }
@@ -80,6 +81,7 @@ describe DataImport::Definition::Simple::Importer do
 
         subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 1}).and_return({:new_id => 1})
         writer.should_receive(:write_row).any_number_of_times
+        dictionary.should_receive(:update_dictionaries)
 
         subject.import_row(:id => 1)
         validated_mapped_rows.should == [{:new_id => 1}]
@@ -110,6 +112,8 @@ describe DataImport::Definition::Simple::Importer do
       subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 1}).and_return({:new_id => 1})
       subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 2}).and_return({:new_id => 2})
       writer.should_receive(:write_row).any_number_of_times
+      dictionary.should_receive(:update_dictionaries).twice
+
       subject.import_row(:id => 1)
       subject.import_row(:id => 2)
 
