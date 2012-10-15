@@ -32,6 +32,10 @@ class ExecutionContext
     @execution_plan.id_mapping_container.fetch(definition_name, mapping_name)
   end
 
+  def id_mapping_container
+    @execution_plan.id_mapping_container
+  end
+
   class Proxy
     def initialize(context)
       @context = context

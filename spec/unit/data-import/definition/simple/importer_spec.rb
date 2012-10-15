@@ -5,10 +5,10 @@ describe DataImport::Definition::Simple::Importer do
   let(:source) { stub }
   let(:target) { stub }
   let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target, nil }
-  let(:dictionary) { stub }
-  let(:definition) { DataImport::Definition::Simple.new 'A', source, target, dictionary }
+  let(:id_mapping_container) { mock('Id mapping container') }
+  let(:definition) { DataImport::Definition::Simple.new 'A', source, target, id_mapping_container }
   let(:progress_reporter) { mock('ProgressReporter') }
-  let(:context) { mock('Context', :name => 'A', :progress_reporter => progress_reporter) }
+  let(:context) { mock('Context', :name => 'A', :progress_reporter => progress_reporter, :id_mapping_container => id_mapping_container) }
   before { context.stub(:definition).with('C').and_return(other_definition) }
   subject { described_class.new(context, definition) }
 
@@ -81,7 +81,7 @@ describe DataImport::Definition::Simple::Importer do
 
         subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 1}).and_return({:new_id => 1})
         writer.should_receive(:write_row).any_number_of_times
-        dictionary.should_receive(:update_dictionaries)
+        id_mapping_container.should_receive(:update_dictionaries)
 
         subject.import_row(:id => 1)
         validated_mapped_rows.should == [{:new_id => 1}]
@@ -112,7 +112,7 @@ describe DataImport::Definition::Simple::Importer do
       subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 1}).and_return({:new_id => 1})
       subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 2}).and_return({:new_id => 2})
       writer.should_receive(:write_row).any_number_of_times
-      dictionary.should_receive(:update_dictionaries).twice
+      id_mapping_container.should_receive(:update_dictionaries).twice
 
       subject.import_row(:id => 1)
       subject.import_row(:id => 2)
@@ -126,7 +126,8 @@ describe DataImport::Definition::Simple::Importer do
     let(:id_mapping) { mock }
     let(:name_mapping) { mock }
     let(:mappings) { [id_mapping, name_mapping] }
-    let(:definition) { stub(:mappings => mappings,
+    let(:definition) { stub(:name => 'A',
+                            :mappings => mappings,
                             :writer => writer,
                             :after_row_blocks => [],
                             :row_validation_blocks => []) }
@@ -150,13 +151,13 @@ describe DataImport::Definition::Simple::Importer do
 
       it "executes the insertion" do
         writer.should_receive(:write_row).with({:id => 1})
-        definition.stub(:row_imported)
+        id_mapping_container.should_receive(:update_dictionaries)
         subject.import_row(row)
       end
 
       it "adds the generated id to the id mapping of the definition" do
         definition.writer.stub(:write_row).and_return(15)
-        definition.should_receive(:row_imported).with(15, {:id => 1})
+        id_mapping_container.should_receive(:update_dictionaries).with('A', 15, {:id => 1})
         subject.import_row(:id => 1)
       end
     end
