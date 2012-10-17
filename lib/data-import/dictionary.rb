@@ -11,6 +11,10 @@ module DataImport
     def lookup(key)
       @mappings[key]
     end
+
+    def to_hash
+      @mappings
+    end
   end
 
   class CaseIgnoringDictionary < Dictionary

@@ -6,6 +6,11 @@ describe DataImport::Dictionary do
     subject.add('leo', 'lion')
     subject.lookup('leo').should == 'lion'
   end
+
+  it 'has a hash representation of the data' do
+    subject.add('chuck norris', 'strong')
+    subject.to_hash.should == {'chuck norris' => 'strong'}
+  end
 end
 
 describe DataImport::CaseIgnoringDictionary do

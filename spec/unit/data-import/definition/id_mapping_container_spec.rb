@@ -31,5 +31,35 @@ describe DataImport::Definition::IdMappingContainer do
 
       subject.update_dictionaries('Animals', 5, {:name => 'Lion', :continent => 'Africa'})
     end
+
+    it 'puts the dictionaries into a class independent format' do
+      name_dictionary.should_receive(:to_hash).and_return({1 => 7})
+      tag_dictionary.should_receive(:to_hash).and_return({6 => 2})
+
+      subject.to_hash.should == {
+        'Animals' => [
+                      {:name => 'name',
+                        :attribute => :name,
+                        :mappings => {1 => 7}},
+                      {:name => 'tagged animal',
+                        :attribute => :tag,
+                        :mappings => {6 => 2}}
+                     ]}
+    end
+
+    it 'loads the data in the exported format again' do
+      name_dictionary.should_receive(:add).with(7, 8)
+      tag_dictionary.should_not_receive(:add)
+
+      subject.load({
+                     'Animals' => [
+                                   {:name => 'name',
+                                     :attribute => :name,
+                                     :mappings => {7 => 8}},
+                                   {:name => 'tagged animal',
+                                     :attribute => :chip_id,
+                                     :mappings => {6 => 3}}
+                                  ]})
+    end
   end
 end
