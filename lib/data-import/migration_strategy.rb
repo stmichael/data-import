@@ -34,15 +34,5 @@ module DataImport
       bar.finish
     end
     protected :run_definition
-
-    def store_settings(completed_definitions, id_mapping_container)
-      File.open('.import_definitions', 'w') do |f|
-        f << Marshal.dump(completed_definitions)
-      end
-      File.open('.import_mappings', 'w') do |f|
-        f << Marshal.dump(id_mapping_container.to_hash)
-      end
-    end
-    protected :store_settings
   end
 end
