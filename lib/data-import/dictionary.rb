@@ -15,6 +15,14 @@ module DataImport
     def to_hash
       @mappings
     end
+
+    def empty?
+      @mappings.empty?
+    end
+
+    def clear
+      @mappings.clear
+    end
   end
 
   class CaseIgnoringDictionary < Dictionary

@@ -11,6 +11,18 @@ describe DataImport::Dictionary do
     subject.add('chuck norris', 'strong')
     subject.to_hash.should == {'chuck norris' => 'strong'}
   end
+
+  it 'checks whether a dictionary is empty' do
+    subject.should be_empty
+    subject.add('I', 'rule')
+    subject.should_not be_empty
+  end
+
+  it 'clear all data' do
+    subject.add('I', 'rule')
+    subject.clear
+    subject.should be_empty
+  end
 end
 
 describe DataImport::CaseIgnoringDictionary do

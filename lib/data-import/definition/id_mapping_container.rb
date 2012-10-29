@@ -33,6 +33,14 @@ module DataImport
         end
       end
 
+      def clear
+        @mapping_configs.each do |_name, configs|
+          configs.each do |config|
+            config.clear
+          end
+        end
+      end
+
       def to_hash
         @mapping_configs.each_with_object({}) do |(definition_name, configs), result|
           result[definition_name] = configs.map(&:to_hash)
@@ -40,6 +48,8 @@ module DataImport
       end
 
       def load(mapping_data)
+        clear
+
         mapping_data.each do |definition_name, configs|
           configs.each do |config_data|
             config = fetch_config(definition_name, config_data[:name])
@@ -57,6 +67,10 @@ module DataImport
           @name = name
           @attribute = attribute.to_sym
           @dictionary = dictionary
+        end
+
+        def clear
+          dictionary.clear
         end
 
         def to_hash

@@ -32,6 +32,13 @@ describe DataImport::Definition::IdMappingContainer do
       subject.update_dictionaries('Animals', 5, {:name => 'Lion', :continent => 'Africa'})
     end
 
+    it 'clear all mapping data' do
+      name_dictionary.should_receive(:clear)
+      tag_dictionary.should_receive(:clear)
+
+      subject.clear
+    end
+
     it 'puts the dictionaries into a class independent format' do
       name_dictionary.should_receive(:to_hash).and_return({1 => 7})
       tag_dictionary.should_receive(:to_hash).and_return({6 => 2})
@@ -47,8 +54,10 @@ describe DataImport::Definition::IdMappingContainer do
                      ]}
     end
 
-    it 'loads the data in the exported format again' do
-      name_dictionary.should_receive(:add).with(7, 8)
+    it 'purges and loads the dictionaries from the exported format' do
+      name_dictionary.should_receive(:clear).ordered
+      tag_dictionary.should_receive(:clear).ordered
+      name_dictionary.should_receive(:add).with(7, 8).ordered
       tag_dictionary.should_not_receive(:add)
 
       subject.load({
