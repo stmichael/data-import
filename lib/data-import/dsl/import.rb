@@ -5,9 +5,10 @@ module DataImport
     class Import
       include Dependencies
 
-      attr_reader :definition
+      attr_reader :definition, :options
 
-      def initialize(definition)
+      def initialize(definition, options = {})
+        @options = options
         @definition = definition
       end
 

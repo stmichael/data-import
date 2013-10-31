@@ -85,16 +85,17 @@ describe DataImport::Dsl do
         subject.import('a') {}
       end
 
-      it "executes the block in an import context" do
+      it "executes the block in an import context with options" do
         subject.stub(:source_database).and_return { nil }
         subject.stub(:target_database).and_return { nil }
+        subject.stub(:options).and_return({})
 
         my_block = lambda {}
         import_dsl = stub
         definition = stub
         DataImport::Definition::Simple.should_receive(:new).with(any_args).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
-        DataImport::Dsl::Import.should_receive(:new).with(definition).and_return(import_dsl)
+        DataImport::Dsl::Import.should_receive(:new).with(definition, {}).and_return(import_dsl)
 
         import_dsl.should_receive(:instance_eval).with(&my_block)
         subject.import 'name', &my_block
@@ -123,15 +124,16 @@ describe DataImport::Dsl do
         subject.script('a') {}
       end
 
-      it "executes the block in an script conext" do
+      it "executes the block in a script context with options" do
         subject.stub(:source_database).and_return { nil }
         subject.stub(:target_database).and_return { nil }
+        subject.stub(:options).and_return({})
 
         my_block = lambda {}
         script_dsl = stub
         DataImport::Definition::Script.should_receive(:new).with(any_args).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
-        DataImport::Dsl::Script.should_receive(:new).with(definition).and_return(script_dsl)
+        DataImport::Dsl::Script.should_receive(:new).with(definition, {}).and_return(script_dsl)
 
         script_dsl.should_receive(:instance_eval).with(&my_block)
         subject.script 'name', &my_block

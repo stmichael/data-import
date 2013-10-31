@@ -13,7 +13,7 @@ module DataImport
         bar = @progress_reporter.new(definition.name, definition.total_steps_required)
 
         DataImport.logger.info "Starting to import \"#{definition.name}\""
-        context = ExecutionContext.new(resolved_plan, definition, bar)
+        context = ExecutionContext.new(resolved_plan, definition, bar, @plan.options)
         definition.run context
 
         bar.finish
