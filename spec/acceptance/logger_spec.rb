@@ -39,14 +39,20 @@ describe 'logger' do
   let(:messages) { StringIO.new }
 
   it 'skip invalid records' do
-    logger = Logger.new(messages)
-    logger.formatter = proc { |severity, time, progname, msg| "%s: %s\n" % [severity, msg] }
+    old_logger = DataImport.full_logger
 
-    DataImport.full_logger = logger
+    begin
+      logger = Logger.new(messages)
+      logger.formatter = proc { |severity, time, progname, msg| "%s: %s\n" % [severity, msg] }
 
-    DataImport.run_plan!(plan)
+      DataImport.full_logger = logger
 
-    messages.string.strip.should == "INFO: Starting to import \"People\"\nINFO: Row {:Name=>\"Jack\", :Gender=>\"m\"} skipped since the gender is male"
+      DataImport.run_plan!(plan)
+
+      messages.string.strip.should == "INFO: Starting to import \"People\"\nINFO: Row {:Name=>\"Jack\", :Gender=>\"m\"} skipped since the gender is male"
+    ensure
+      DataImport.full_logger = old_logger
+    end
   end
 
 end
