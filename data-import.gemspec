@@ -30,6 +30,10 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency "sequel"
   s.add_runtime_dependency "progressbar"
-  s.add_runtime_dependency "activesupport", '>= 3.1.1'
+  if Gem::Version.new(RUBY_VERSION.dup) < Gem::Version.new('1.9.3')
+    s.add_runtime_dependency "activesupport", '>= 3.1.1', '< 4.0.0'
+  else
+    s.add_runtime_dependency "activesupport", '>= 3.1.1'
+  end
   s.add_runtime_dependency "i18n"
 end
