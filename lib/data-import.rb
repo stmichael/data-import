@@ -5,9 +5,14 @@ require 'active_support/all'
 
 require "data-import/version"
 require "data-import/errors"
+require 'data-import/dictionary'
 require 'data-import/dependency_resolver'
 require 'data-import/execution_context'
 require 'data-import/runner'
+require 'data-import/migration_strategy'
+require 'data-import/full_migration'
+require 'data-import/partial_migration'
+require 'data-import/settings_store'
 require 'data-import/execution_plan'
 require 'data-import/dsl'
 require 'data-import/sequel/dataset'

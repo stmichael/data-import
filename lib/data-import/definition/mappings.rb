@@ -49,7 +49,7 @@ module DataImport
       end
 
       def apply!(definition, context, row, output_row)
-        output_row.merge!(@new_foreign_key => context.definition(@referenced_definition).identify_by(@lookup_name, row[@old_foreign_key]))
+        output_row.merge!(@new_foreign_key => context.id_mapping_for(@referenced_definition, @lookup_name).lookup(row[@old_foreign_key]))
       end
     end
 

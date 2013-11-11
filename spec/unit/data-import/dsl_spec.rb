@@ -64,13 +64,17 @@ describe DataImport::Dsl do
     end
 
     describe "#import" do
+      let(:definition) { stub }
+      let(:container) { stub }
+
       it "adds a new import config to the import" do
         subject.stub(:source_database).and_return { nil }
         subject.stub(:target_database).and_return { nil }
 
-        definition = stub
-        DataImport::Definition::Simple.should_receive(:new).with('Import 5', nil, nil).and_return(definition)
+        DataImport::Definition::Simple.should_receive(:new).with('Import 5', nil, nil, container).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
+        plan.should_receive(:id_mapping_container).any_number_of_times.and_return(container)
+
         subject.import('Import 5') {}
       end
 
@@ -78,9 +82,9 @@ describe DataImport::Dsl do
         subject.stub(:source_database).and_return { :source }
         subject.stub(:target_database).and_return { :target }
 
-        definition = stub
-        DataImport::Definition::Simple.should_receive(:new).with('a', :source, :target).and_return(definition)
+        DataImport::Definition::Simple.should_receive(:new).with('a', :source, :target, container).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
+        plan.should_receive(:id_mapping_container).any_number_of_times.and_return(container)
 
         subject.import('a') {}
       end
@@ -91,10 +95,10 @@ describe DataImport::Dsl do
 
         my_block = lambda {}
         import_dsl = stub
-        definition = stub
         DataImport::Definition::Simple.should_receive(:new).with(any_args).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
-        DataImport::Dsl::Import.should_receive(:new).with(definition).and_return(import_dsl)
+        plan.should_receive(:id_mapping_container).any_number_of_times.and_return(container)
+        DataImport::Dsl::Import.should_receive(:new).with(definition, container).and_return(import_dsl)
 
         import_dsl.should_receive(:instance_eval).with(&my_block)
         subject.import 'name', &my_block
@@ -103,13 +107,15 @@ describe DataImport::Dsl do
 
     describe "#script" do
       let(:definition) { stub }
+      let(:container) { stub }
 
       it "adds a new script config to the import" do
         subject.stub(:source_database).and_return { nil }
         subject.stub(:target_database).and_return { nil }
 
-        DataImport::Definition::Script.should_receive(:new).with('Script', nil, nil).and_return(definition)
+        DataImport::Definition::Script.should_receive(:new).with('Script', nil, nil, container).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
+        plan.should_receive(:id_mapping_container).any_number_of_times.and_return(container)
         subject.script('Script') {}
       end
 
@@ -117,8 +123,9 @@ describe DataImport::Dsl do
         subject.stub(:source_database).and_return { :source }
         subject.stub(:target_database).and_return { :target }
 
-        DataImport::Definition::Script.should_receive(:new).with('a', :source, :target).and_return(definition)
+        DataImport::Definition::Script.should_receive(:new).with('a', :source, :target, container).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
+        plan.should_receive(:id_mapping_container).any_number_of_times.and_return(container)
 
         subject.script('a') {}
       end
@@ -131,7 +138,8 @@ describe DataImport::Dsl do
         script_dsl = stub
         DataImport::Definition::Script.should_receive(:new).with(any_args).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
-        DataImport::Dsl::Script.should_receive(:new).with(definition).and_return(script_dsl)
+        plan.should_receive(:id_mapping_container).any_number_of_times.and_return(container)
+        DataImport::Dsl::Script.should_receive(:new).with(definition, container).and_return(script_dsl)
 
         script_dsl.should_receive(:instance_eval).with(&my_block)
         subject.script 'name', &my_block

@@ -10,7 +10,7 @@ module DataImport
       resolved_dependencies = @strategy.new(dependency_graph).call(options)
       resolved_dependencies = resolved_dependencies.map {|definition| @plan.definition(definition) }
 
-      ExecutionPlan.new(resolved_dependencies)
+      ExecutionPlan.new(resolved_dependencies, @plan.id_mapping_container)
     end
 
     def dependency_graph

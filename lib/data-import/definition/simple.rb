@@ -2,14 +2,12 @@ module DataImport
   class Definition
     class Simple < Definition
 
-      include Lookup
-
       attr_accessor :target_table_name
       attr_accessor :reader, :writer
       attr_accessor :after_blocks, :after_row_blocks
       attr_accessor :row_validation_blocks
 
-      def initialize(name, source_database, target_database)
+      def initialize(name, source_database, target_database, id_mapping_container)
         super
         @mappings = []
         @mode = :insert

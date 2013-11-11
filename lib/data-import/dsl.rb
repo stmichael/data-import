@@ -49,17 +49,17 @@ module DataImport
     end
 
     def import(name, &block)
-      definition = DataImport::Definition::Simple.new(name, source_database, target_database)
+      definition = DataImport::Definition::Simple.new(name, source_database, target_database, @plan.id_mapping_container)
       @plan.add_definition(definition)
 
-      Import.new(definition).instance_eval &block
+      Import.new(definition, @plan.id_mapping_container).instance_eval &block
     end
 
     def script(name, &block)
-      definition = DataImport::Definition::Script.new(name, source_database, target_database)
+      definition = DataImport::Definition::Script.new(name, source_database, target_database, @plan.id_mapping_container)
       @plan.add_definition(definition)
 
-      Script.new(definition).instance_eval &block
+      Script.new(definition, @plan.id_mapping_container).instance_eval &block
     end
 
     def before_filter(&block)

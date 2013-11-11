@@ -36,7 +36,7 @@ module DataImport
 
           if row_valid?(row_context)
             new_id = @definition.writer.write_row(mapped_row)
-            @definition.row_imported(new_id, row)
+            @context.id_mapping_container.update_dictionaries(@definition.name, new_id, row)
 
             @definition.after_row_blocks.each do |block|
               row_context.instance_exec(row_context, row, mapped_row, &block)

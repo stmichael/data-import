@@ -1,41 +1,26 @@
 require 'unit/spec_helper'
 
 describe DataImport::Runner do
+  let(:plan) { stub }
+  subject { described_class.new(plan) }
 
-  let(:mock_progress_class) do
-    Class.new do
-      def initialize(name, total_steps); end
-
-      def finish; end
-    end
-  end
-
-  context 'with simple definitions' do
-    let(:people) { DataImport::Definition.new('People', 'tblPerson', 'people') }
-    let(:animals) { DataImport::Definition.new('Animals', 'tblAnimal', 'animals') }
-    let(:articles) { DataImport::Definition.new('Articles', 'tblNewsMessage', 'articles') }
-    let(:plan) { DataImport::ExecutionPlan.new }
-    before do
-      plan.add_definition(articles)
-      plan.add_definition(people)
-      plan.add_definition(animals)
-    end
-
-    subject { DataImport::Runner.new(plan, mock_progress_class) }
-
-    it 'runs a set of definitions' do
-      articles.should_receive(:run)
-      people.should_receive(:run)
-      animals.should_receive(:run)
+  context 'complete import' do
+    it 'executes the plan with the full migration strategy' do
+      strategy = stub
+      DataImport::FullMigration.should_receive(:new).with(plan, {}).and_return(strategy)
+      strategy.should_receive(:run)
 
       subject.run
     end
+  end
 
-    it ":only limits the definitions, which will be run" do
-      people.should_receive(:run)
-      articles.should_receive(:run)
+  context 'partial import' do
+    it 'executes the plan with the partial migration strategy' do
+      strategy = stub
+      DataImport::PartialMigration.should_receive(:new).with(plan, :partial => true).and_return(strategy)
+      strategy.should_receive(:run)
 
-      subject.run :only => ['People', 'Articles']
+      subject.run :partial => true
     end
   end
 end

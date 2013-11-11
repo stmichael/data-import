@@ -3,8 +3,6 @@ module DataImport
     class Script < Definition
       attr_accessor :body
 
-      include Lookup
-
       def run(context)
         target_database.transaction do
           context.instance_exec &body

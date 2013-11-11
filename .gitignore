@@ -5,3 +5,4 @@ pkg/*
 reports/*
 bin/*
 *.log
+.import_settings

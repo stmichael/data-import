@@ -11,6 +11,12 @@ describe DataImport::ExecutionPlan do
     plan.definitions.should == definitions
   end
 
+  it 'can be created with an existing id mapping container' do
+    container = stub
+    plan = DataImport::ExecutionPlan.new([], container)
+    plan.id_mapping_container.should == container
+  end
+
   it 'raises an error when a non-existing definition is fetched' do
     lambda do
       subject.definition('I-do-not-exist')

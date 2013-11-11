@@ -7,6 +7,8 @@ describe "simple mappings" do
       from 'tblAnimal', :primary_key => 'sAnimalID'
       to 'animals'
 
+      lookup_for :sAnimalID
+
       mapping 'sAnimalID' => :id
       mapping 'strAnimalTitleText' => :name
       mapping 'sAnimalAge' => 'age'
@@ -52,6 +54,18 @@ describe "simple mappings" do
         target_database.db[:danger_ratings].insert(:id => 3, :description => 'high')
       end
     end
+
+    import 'Food' do
+      dependencies 'Animals'
+
+      from 'tblFood'
+      to 'food'
+
+      mapping 'Name' => :name
+      mapping 'sAnimalID' do |context, sAnimalID|
+        {:animal_id => context.definition('Animals').identify_by(:sAnimalID, sAnimalID)}
+      end
+    end
   end
 
   database_setup do
@@ -65,6 +79,11 @@ describe "simple mappings" do
       Date :dteDied
     end
 
+    source.create_table :tblFood do
+      String :Name
+      Integer :sAnimalID
+    end
+
     target.create_table :animals do
       primary_key :id
       String :name
@@ -73,6 +92,11 @@ describe "simple mappings" do
       Integer :danger_rating
       String :formatted_name_cache
       String :danger_note
+    end
+
+    target.create_table :food do
+      Integer :animal_id
+      String :name
     end
 
     target.create_table :animal_logs do
@@ -105,6 +129,9 @@ describe "simple mappings" do
                               :sAnimalAge => 5,
                               :strThreat => 'none',
                               :dteBorn => Date.new(1998, 11, 9))
+
+    source[:tblFood].insert(:Name => 'Flesh', :sAnimalID => 1)
+    source[:tblFood].insert(:Name => 'Grass', :sAnimalID => 2)
   end
 
   it 'mapps columns to the new schema' do

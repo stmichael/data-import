@@ -3,7 +3,7 @@ require 'unit/spec_helper'
 describe DataImport::Definition::Script do
   let(:source) { stub }
   let(:target) { mock }
-  subject { described_class.new('a', source, target) }
+  subject { described_class.new('a', source, target, nil) }
 
   describe '#run' do
     let(:context) { stub(:name => 'ABC') }

@@ -1,9 +1,12 @@
 module DataImport
   class ExecutionPlan
-    def initialize(definitions = [])
+    attr_reader :id_mapping_container
+
+    def initialize(definitions = [], id_mapping_container = nil)
       @definitions = Hash[definitions.map do |definition|
                             [definition.name, definition]
                           end]
+      @id_mapping_container = id_mapping_container || Definition::IdMappingContainer.new
     end
 
     def add_definition(definition)

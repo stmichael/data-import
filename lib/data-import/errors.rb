@@ -11,6 +11,18 @@ module DataImport
     end
   end
 
+  class MissingIdMappingError < RuntimeError
+    MESSAGE = <<-ERROR
+      no id mapping found for '%s'. possible reasons are:
+        - you did not define '%s'
+        - you executed a partial migration and forgot to add '%s' as a dependency
+    ERROR
+
+    def initialize(name)
+      super(MESSAGE % [name, name, name])
+    end
+  end
+
   class CircularDependencyError < RuntimeError
     MESSAGE = <<-ERROR
       circular dependencies for: '%s' <-> '%s'. possible reasons are:

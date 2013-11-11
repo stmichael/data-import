@@ -4,7 +4,7 @@ describe DataImport::Definition::Simple do
 
   let(:source) { stub }
   let(:target) { stub }
-  subject { DataImport::Definition::Simple.new('a', source, target) }
+  subject { DataImport::Definition::Simple.new('a', source, target, nil) }
 
   describe "#mappings" do
     it "returns an empty hash by default" do
