@@ -24,8 +24,8 @@ describe 'mappings' do
   describe DataImport::Definition::Simple::BlockMapping do
     let(:a_block) { lambda {} }
     describe "#apply!" do
-      let(:context) { stub }
-      let(:definition) { stub }
+      let(:context) { double }
+      let(:definition) { double }
 
       context 'with a single column' do
         let(:a_block) {
@@ -77,8 +77,8 @@ describe 'mappings' do
 
   describe DataImport::Definition::Simple::WildcardBlockMapping do
     describe '#apply!' do
-      let(:context) { stub }
-      let(:definition) { stub }
+      let(:context) { double }
+      let(:definition) { double }
 
       subject { described_class.new(a_block) }
       let(:a_block) {
@@ -90,7 +90,7 @@ describe 'mappings' do
       it 'passes the wole row to the block' do
         row = {:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'}
 
-        context.should_receive(:arguments).any_number_of_times.and_return({:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'})
+        context.stub(:arguments).and_return({:sLegacyID => 12, :strSomeName => 'John', :strSomeOtherString => 'Jane'})
 
         subject.apply!(definition, context, row, output_row)
         output_row.should == {:result => 'John12Jane'}
@@ -99,8 +99,8 @@ describe 'mappings' do
   end
 
   describe DataImport::Definition::Simple::ReferenceMapping do
-    let(:context) { stub }
-    let(:definition) { stub }
+    let(:context) { double }
+    let(:definition) { double }
 
     context 'with a specific id lookup name' do
       subject { described_class.new('OldAddress', :sLegacyAddressId, :address_id, :reference) }
@@ -108,7 +108,7 @@ describe 'mappings' do
       it 'sets the foreign key to the newly generated primary key' do
         row = {:sLegacyAddressId => 28}
 
-        address_definition = stub
+        address_definition = double
         context.should_receive(:definition).with('OldAddress').and_return(address_definition)
         address_definition.should_receive(:identify_by).with(:reference, 28).and_return(4)
 
@@ -123,7 +123,7 @@ describe 'mappings' do
       it 'uses :id to look up the newly generated id' do
         row = {:sLegacyAddressId => 28}
 
-        address_definition = stub
+        address_definition = double
         context.should_receive(:definition).with('OldAddress').and_return(address_definition)
         address_definition.should_receive(:identify_by).with(:id, 28)
 

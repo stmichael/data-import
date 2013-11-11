@@ -1,8 +1,8 @@
 require 'unit/spec_helper'
 
 describe DataImport::Logger do
-  let(:important) { mock }
-  let(:full) { mock }
+  let(:important) { double }
+  let(:full) { double }
   subject { described_class.new(full, important) }
 
   it 'writes debug and info messages only to the full logger' do

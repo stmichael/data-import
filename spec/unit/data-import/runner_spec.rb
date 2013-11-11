@@ -15,6 +15,7 @@ describe DataImport::Runner do
     let(:animals) { DataImport::Definition.new('Animals', 'tblAnimal', 'animals') }
     let(:articles) { DataImport::Definition.new('Articles', 'tblNewsMessage', 'articles') }
     let(:plan) { DataImport::ExecutionPlan.new }
+
     before do
       plan.add_definition(articles)
       plan.add_definition(people)

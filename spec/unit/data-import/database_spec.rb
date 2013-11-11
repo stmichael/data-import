@@ -11,8 +11,8 @@ describe DataImport::Database do
   describe ".connect" do
     let(:options) { {:database => 'example', :username => 'bob', :password => 'secret'} }
     let(:output) { StringIO.new }
-    let(:sequel_db) { mock }
-    let(:connection) { stub }
+    let(:sequel_db) { double }
+    let(:connection) { double }
     before do
       @stdout = $stdout
       $stdout = output
@@ -34,7 +34,7 @@ describe DataImport::Database do
   end
 
   describe DataImport::Database::Connection do
-    let(:db) { mock }
+    let(:db) { double }
     subject { DataImport::Database::Connection.new(db) }
 
     it 'decorates the passed in database connection' do

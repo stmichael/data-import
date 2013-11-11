@@ -1,12 +1,12 @@
 require 'unit/spec_helper'
 
 describe DataImport::Definition::Script do
-  let(:source) { stub }
-  let(:target) { mock }
+  let(:source) { double }
+  let(:target) { double }
   subject { described_class.new('a', source, target) }
 
   describe '#run' do
-    let(:context) { stub(:name => 'ABC') }
+    let(:context) { double(:name => 'ABC') }
 
     it 'execute the definition and displays the progress' do
       found_name = nil

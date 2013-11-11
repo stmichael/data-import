@@ -2,8 +2,8 @@ require 'unit/spec_helper'
 
 describe DataImport::Definition::Simple do
 
-  let(:source) { stub }
-  let(:target) { stub }
+  let(:source) { double }
+  let(:target) { double }
   subject { DataImport::Definition::Simple.new('a', source, target) }
 
   describe "#mappings" do
@@ -16,7 +16,7 @@ describe DataImport::Definition::Simple do
 
   describe '#add_mapping' do
     it 'adds a mapping to the definition' do
-      mapping = stub
+      mapping = double
       subject.add_mapping(mapping)
       subject.mappings.next.should == mapping
     end
@@ -24,7 +24,7 @@ describe DataImport::Definition::Simple do
 
   describe '#run' do
     it 'executes the definition and displays the progress' do
-      importer = mock
+      importer = double
       DataImport::Definition::Simple::Importer.should_receive(:new).with('CONTEXT', subject).and_return(importer)
       importer.should_receive(:run)
       subject.run('CONTEXT')

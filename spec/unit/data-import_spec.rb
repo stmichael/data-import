@@ -5,9 +5,9 @@ describe DataImport do
   subject { DataImport }
 
   describe ".run_definitions!" do
-    let(:runner) { stub }
+    let(:runner) { double }
     let(:plan) { DataImport::ExecutionPlan.new(definitions) }
-    let(:definitions) { [stub(:name => 'Artists'), stub(:name => 'Paints')] }
+    let(:definitions) { [double(:name => 'Artists'), double(:name => 'Paints')] }
 
     it "can execute a configuration file" do
       DataImport::Dsl.should_receive(:evaluate_import_config).with('my_file').and_return(plan)

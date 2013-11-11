@@ -2,18 +2,18 @@ require 'unit/spec_helper'
 
 describe DataImport::Definition::Simple::Importer do
 
-  let(:source) { stub }
-  let(:target) { stub }
+  let(:source) { double }
+  let(:target) { double }
   let(:other_definition) { DataImport::Definition::Simple.new 'C', source, target }
   let(:definition) { DataImport::Definition::Simple.new 'A', source, target }
-  let(:progress_reporter) { mock('ProgressReporter') }
-  let(:context) { mock('Context', :name => 'A', :progress_reporter => progress_reporter) }
+  let(:progress_reporter) { double('ProgressReporter') }
+  let(:context) { double('Context', :name => 'A', :progress_reporter => progress_reporter) }
   before { context.stub(:definition).with('C').and_return(other_definition) }
   subject { described_class.new(context, definition) }
 
   describe "#run" do
-    let(:reader) { mock }
-    let(:writer) { mock }
+    let(:reader) { double }
+    let(:writer) { double }
     before { definition.stub(:reader => reader) }
     before { definition.stub(:writer => writer) }
     before { writer.stub(:transaction).and_yield }
@@ -66,7 +66,7 @@ describe DataImport::Definition::Simple::Importer do
     end
 
     context 'validation' do
-      let(:writer) { mock }
+      let(:writer) { double }
       before { definition.writer = writer }
 
       it 'validates data before insertion' do
@@ -79,7 +79,7 @@ describe DataImport::Definition::Simple::Importer do
         end
 
         subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 1}).and_return({:new_id => 1})
-        writer.should_receive(:write_row).any_number_of_times
+        writer.stub(:write_row)
 
         subject.import_row(:id => 1)
         validated_mapped_rows.should == [{:new_id => 1}]
@@ -97,7 +97,7 @@ describe DataImport::Definition::Simple::Importer do
   end
 
   context 'after row blocks' do
-    let(:writer) { mock }
+    let(:writer) { double }
     before { definition.writer = writer }
     it "run after the data import" do
       input_rows = []
@@ -109,7 +109,7 @@ describe DataImport::Definition::Simple::Importer do
 
       subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 1}).and_return({:new_id => 1})
       subject.should_receive(:map_row).with(instance_of(DataImport::Definition::Simple::Context), {:id => 2}).and_return({:new_id => 2})
-      writer.should_receive(:write_row).any_number_of_times
+      writer.stub(:write_row)
       subject.import_row(:id => 1)
       subject.import_row(:id => 2)
 
@@ -119,14 +119,14 @@ describe DataImport::Definition::Simple::Importer do
   end
 
   context do
-    let(:id_mapping) { mock }
-    let(:name_mapping) { mock }
+    let(:id_mapping) { double }
+    let(:name_mapping) { double }
     let(:mappings) { [id_mapping, name_mapping] }
-    let(:definition) { stub(:mappings => mappings,
-                            :writer => writer,
-                            :after_row_blocks => [],
-                            :row_validation_blocks => []) }
-    let(:writer) { mock }
+    let(:definition) { double(:mappings => mappings,
+                              :writer => writer,
+                              :after_row_blocks => [],
+                              :row_validation_blocks => []) }
+    let(:writer) { double }
 
 
     subject { described_class.new(context, definition) }

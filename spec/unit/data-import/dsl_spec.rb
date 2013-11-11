@@ -2,7 +2,7 @@ require 'unit/spec_helper'
 
 describe DataImport::Dsl do
 
-  let(:plan) { stub }
+  let(:plan) { double }
 
   context "class methods" do
     subject { DataImport::Dsl }
@@ -68,7 +68,7 @@ describe DataImport::Dsl do
         subject.stub(:source_database).and_return { nil }
         subject.stub(:target_database).and_return { nil }
 
-        definition = stub
+        definition = double
         DataImport::Definition::Simple.should_receive(:new).with('Import 5', nil, nil).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
         subject.import('Import 5') {}
@@ -78,7 +78,7 @@ describe DataImport::Dsl do
         subject.stub(:source_database).and_return { :source }
         subject.stub(:target_database).and_return { :target }
 
-        definition = stub
+        definition = double
         DataImport::Definition::Simple.should_receive(:new).with('a', :source, :target).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
 
@@ -90,8 +90,8 @@ describe DataImport::Dsl do
         subject.stub(:target_database).and_return { nil }
 
         my_block = lambda {}
-        import_dsl = stub
-        definition = stub
+        import_dsl = double
+        definition = double
         DataImport::Definition::Simple.should_receive(:new).with(any_args).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
         DataImport::Dsl::Import.should_receive(:new).with(definition).and_return(import_dsl)
@@ -102,7 +102,7 @@ describe DataImport::Dsl do
     end
 
     describe "#script" do
-      let(:definition) { stub }
+      let(:definition) { double }
 
       it "adds a new script config to the import" do
         subject.stub(:source_database).and_return { nil }
@@ -128,7 +128,7 @@ describe DataImport::Dsl do
         subject.stub(:target_database).and_return { nil }
 
         my_block = lambda {}
-        script_dsl = stub
+        script_dsl = double
         DataImport::Definition::Script.should_receive(:new).with(any_args).and_return(definition)
         plan.should_receive(:add_definition).with(definition)
         DataImport::Dsl::Script.should_receive(:new).with(definition).and_return(script_dsl)

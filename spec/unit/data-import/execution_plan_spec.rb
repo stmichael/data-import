@@ -2,8 +2,8 @@ require 'unit/spec_helper'
 
 describe DataImport::ExecutionPlan do
 
-  let(:people) { stub(:name => 'People') }
-  let(:houses) { stub(:name => 'House') }
+  let(:people) { double(:name => 'People') }
+  let(:houses) { double(:name => 'House') }
   let(:definitions) { [people, houses] }
 
   it 'can be created with a set of definitions' do
@@ -27,8 +27,8 @@ describe DataImport::ExecutionPlan do
     subject { DataImport::ExecutionPlan.new(definitions) }
 
     it 'stores the order the definitions were added' do
-      cats = stub(:name => 'Cats')
-      dogs = stub(:name => 'Dogs')
+      cats = double(:name => 'Cats')
+      dogs = double(:name => 'Dogs')
       subject.add_definition(cats)
       subject.add_definition(dogs)
 

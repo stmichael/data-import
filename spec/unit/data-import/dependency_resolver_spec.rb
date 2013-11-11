@@ -2,11 +2,11 @@ require 'unit/spec_helper'
 
 describe DataImport::DependencyResolver do
 
-  let(:strategy_class) { mock }
-  let(:strategy) { mock }
-  let(:a) { stub('A', :name => 'A', :dependencies => []) }
-  let(:b) { stub('B', :name => 'B', :dependencies => ['A']) }
-  let(:c) { stub('C', :name => 'C', :dependencies => ['A', 'B']) }
+  let(:strategy_class) { double }
+  let(:strategy) { double }
+  let(:a) { double('A', :name => 'A', :dependencies => []) }
+  let(:b) { double('B', :name => 'B', :dependencies => ['A']) }
+  let(:c) { double('C', :name => 'C', :dependencies => ['A', 'B']) }
   let(:plan) { DataImport::ExecutionPlan.new([a, b, c]) }
   subject { DataImport::DependencyResolver.new(plan, strategy) }
 
@@ -27,7 +27,7 @@ describe DataImport::DependencyResolver do
     # Create the input plan before the mocks are setup
     plan
 
-    resolved_plan = mock
+    resolved_plan = double
     DataImport::ExecutionPlan.should_receive(:new).with([a, b]).and_return(resolved_plan)
     subject.resolve.should == resolved_plan
   end

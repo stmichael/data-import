@@ -2,8 +2,8 @@ require 'unit/spec_helper'
 
 describe DataImport::Dsl::Import do
 
-  let(:source) { stub(:adapter_scheme => 'sqlite') }
-  let(:target) { stub }
+  let(:source) { double(:adapter_scheme => 'sqlite') }
+  let(:target) { double }
 
   let(:definition) { DataImport::Definition::Simple.new('d', source, target) }
   subject { DataImport::Dsl::Import.new(definition) }
@@ -11,7 +11,7 @@ describe DataImport::Dsl::Import do
   describe "#from" do
     context 'when a table-name is passed' do
       it "assigns the source dataset to the definition" do
-        reader = stub
+        reader = double
         DataImport::Sequel::Table.should_receive(:new).
           with(source, 'tblConversions', :primary_key => 'sID').
           and_return(reader)
@@ -25,7 +25,7 @@ describe DataImport::Dsl::Import do
       it 'uses the block to build the base query' do
         custom_dataset = lambda { |db| }
 
-        reader = stub
+        reader = double
         DataImport::Sequel::Dataset.should_receive(:new).with(source, custom_dataset).and_return(reader)
 
         subject.from &custom_dataset
@@ -35,7 +35,7 @@ describe DataImport::Dsl::Import do
   end
 
   describe "#to" do
-    let(:writer) { stub('writer') }
+    let(:writer) { double('writer') }
 
     it "assigns a table-writer for the given table to the definition" do
       target.stub(:adapter_scheme)
@@ -85,7 +85,7 @@ describe DataImport::Dsl::Import do
   describe 'mapping definitions' do
     describe "#mapping" do
       it "adds a column mapping to the definition" do
-        name_mapping = stub
+        name_mapping = double
         DataImport::Definition::Simple::NameMapping.should_receive(:new).with(:a, :b).and_return(name_mapping)
         definition.should_receive(:add_mapping).with(name_mapping)
 
@@ -95,7 +95,7 @@ describe DataImport::Dsl::Import do
       context 'legacy block mappings' do
         let(:block) { lambda{|value|} }
         it "adds a proc to the mappings" do
-          block_mapping = stub
+          block_mapping = double
           DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a], block).and_return(block_mapping)
           definition.should_receive(:add_mapping).with(block_mapping)
 
@@ -103,7 +103,7 @@ describe DataImport::Dsl::Import do
         end
 
         it "adds a proc with multiple fields to the mappings" do
-          block_mapping = stub
+          block_mapping = double
           DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:a, :b], block).and_return(block_mapping)
           definition.should_receive(:add_mapping).with(block_mapping)
 
@@ -111,7 +111,7 @@ describe DataImport::Dsl::Import do
         end
 
         it 'adds a proc with all fields to the mappings' do
-          block_mapping = stub
+          block_mapping = double
           DataImport::Definition::Simple::BlockMapping.should_receive(:new).with([:*], block).and_return(block_mapping)
 
           definition.should_receive(:add_mapping).with(block_mapping)
@@ -123,7 +123,7 @@ describe DataImport::Dsl::Import do
       context 'wildcard block mappings' do
         let(:block) { lambda {} }
         it 'adds a proc with all fields to the mappings' do
-          block_mapping = stub
+          block_mapping = double
           DataImport::Definition::Simple::WildcardBlockMapping.should_receive(:new).with(block).and_return(block_mapping)
 
           definition.should_receive(:add_mapping).with(block_mapping)
@@ -136,7 +136,7 @@ describe DataImport::Dsl::Import do
     describe "#seed" do
       it 'adds a SeedMapping to the definition' do
         seed_hash = {:message => 'welcome', :source => 'migrated'}
-        seed_mapping = stub
+        seed_mapping = double
         DataImport::Definition::Simple::SeedMapping.should_receive(:new).with(seed_hash).and_return(seed_mapping)
         definition.should_receive(:add_mapping).with(seed_mapping)
 

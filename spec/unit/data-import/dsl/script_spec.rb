@@ -2,8 +2,8 @@ require 'unit/spec_helper'
 
 describe DataImport::Dsl::Script do
 
-  let(:source) { stub }
-  let(:target) { stub }
+  let(:source) { double }
+  let(:target) { double }
   let(:definition) { DataImport::Definition::Script.new('s', source, target) }
   subject { described_class.new(definition) }
 
