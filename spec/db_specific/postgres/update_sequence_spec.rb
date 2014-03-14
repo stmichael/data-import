@@ -1,6 +1,6 @@
 require 'integration/spec_helper'
 
-describe DataImport::Sequel::Postgres::UpdateSequence do
+describe DataImport::Sequel::Postgres::UpdateSequence, :postgres => true do
   let(:table_name) { 'cities' }
   let(:connection) { DataImport::Database.connect('postgres://postgres@localhost/data_import_test') }
   subject { DataImport::Sequel::InsertWriter.new(connection, table_name) }
