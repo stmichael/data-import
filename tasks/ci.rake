@@ -16,3 +16,5 @@ namespace :ci do
     t.pattern    = "spec/**/*_spec.rb"
   end
 end
+
+task :ci => ['postgres:setup', 'spec', 'spec:db_specific']
