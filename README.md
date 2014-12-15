@@ -56,6 +56,23 @@ end
 
 data-import provides a clean dsl to define your mappings from the legacy schema to the new one.
 
+### Providing options ###
+
+You may want to make your mappings configurable. Any options you pass into DataImport.run_config! will be passed through to the evaluation context of the provided mappings.
+
+```ruby
+import 'Things' do
+  if options[:validate_rows]
+    validate do ... end
+  end
+
+  seeds options[:seeds]
+end
+
+DataImport.run_config! 'path/to/mapping.rb', { :validate_rows => true, :seeds => { :key => value } }
+```
+
+
 ### Before Filter ###
 
 data-import allows you to definie a global filter. This filter can be used to make global transformations like encoding fixes. You can define a filter, which downcases every string like so:

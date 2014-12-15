@@ -5,18 +5,18 @@ module DataImport
   class Dsl
     class << self
 
-      def evaluate_import_config(files)
+      def evaluate_import_config(files, options = {})
         plan = DataImport::ExecutionPlan.new
         Array(files).each do |file|
-          context = new(plan)
+          context = new(plan, options)
           context.instance_eval read_import_config(file), file
         end
         plan
       end
 
-      def define(&block)
-        plan = DataImport::ExecutionPlan.new
-        context = new(plan)
+      def define(options = {}, &block)
+        plan = DataImport::ExecutionPlan.new([], options)
+        context = new(plan, options)
         context.instance_eval &block
         plan
       end
@@ -28,8 +28,11 @@ module DataImport
 
     end
 
-    def initialize(plan)
+    attr_reader :options
+
+    def initialize(plan, options = {})
       @plan = plan
+      @options = options
     end
 
     def source_database
@@ -52,14 +55,14 @@ module DataImport
       definition = DataImport::Definition::Simple.new(name, source_database, target_database)
       @plan.add_definition(definition)
 
-      Import.new(definition).instance_eval &block
+      Import.new(definition, options).instance_eval &block
     end
 
     def script(name, &block)
       definition = DataImport::Definition::Script.new(name, source_database, target_database)
       @plan.add_definition(definition)
 
-      Script.new(definition).instance_eval &block
+      Script.new(definition, options).instance_eval &block
     end
 
     def before_filter(&block)

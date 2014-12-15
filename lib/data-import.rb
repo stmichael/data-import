@@ -21,7 +21,7 @@ require 'data-import/logger'
 module DataImport
   class << self
     def run_config!(config_paths, options = {})
-      plan = DataImport::Dsl.evaluate_import_config(config_paths)
+      plan = DataImport::Dsl.evaluate_import_config(config_paths, options)
       run_plan!(plan, options)
     end
 

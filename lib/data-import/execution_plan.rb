@@ -1,6 +1,9 @@
 module DataImport
   class ExecutionPlan
-    def initialize(definitions = [])
+    attr_reader :options
+
+    def initialize(definitions = [], options = {})
+      @options = options
       @definitions = Hash[definitions.map do |definition|
                             [definition.name, definition]
                           end]

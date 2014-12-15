@@ -2,8 +2,8 @@ require 'ostruct'
 
 module TestingMacros
 
-  def in_memory_mapping(&block)
-    plan = DataImport::Dsl.define do
+  def in_memory_mapping(options = {}, &block)
+    plan = DataImport::Dsl.define(options) do
       source 'sqlite:/'
       target 'sqlite:/'
 

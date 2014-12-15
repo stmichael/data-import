@@ -10,7 +10,7 @@ describe DataImport do
     let(:definitions) { [double(:name => 'Artists'), double(:name => 'Paints')] }
 
     it "can execute a configuration file" do
-      DataImport::Dsl.should_receive(:evaluate_import_config).with('my_file').and_return(plan)
+      DataImport::Dsl.should_receive(:evaluate_import_config).with('my_file', :only => ['C']).and_return(plan)
       DataImport::Runner.should_receive(:new).with(plan).and_return(runner)
       runner.should_receive(:run).with(:only => ['C'])
 
