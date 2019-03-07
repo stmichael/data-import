@@ -1,8 +1,6 @@
 require 'delegate'
 require 'sequel'
 
-Sequel.identifier_output_method = :to_s
-
 module DataImport
   class Database
 
@@ -15,6 +13,8 @@ module DataImport
                 end
       options ||= {}
       db = ::Sequel.connect(options)
+      db.extension :identifier_mangling
+      db.identifier_output_method = :to_s
       Connection.new(db)
     end
 
